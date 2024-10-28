@@ -5,31 +5,36 @@ namespace Server_main
 {
     internal class Loop
     {
-        static List<Socket> users = new List<Socket>();
-
         static void Main(string[] args)
         {
             RootServer root = new RootServer("0.0.0.0", 50000);
             root.StartServer();
 
-            /// 사용자 연결 시작
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 while (true)
                 {
-                    Socket? client = root.AddUsers();
-                    if(client != null) users.Add(client);
+                    root.RunServer();
                 }
             });
 
-            /// 지속적으로 띄울 메세지
-            Task.Run(() =>
+            
+            /// 메인 스레드가 종료되지 않도록 하는 무한 루프
+            while (true)
             {
-                while(true)
+                try
                 {
+                    /// 지속적으로 띄울 메세지
+                    Console.WriteLine($"...Server is running...Users on server: {root.GetUserCount()}");
                     Thread.Sleep(5000);
-                    Console.WriteLine($"...Server is running... Users on server: {users.Count}");
                 }
-            });
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    break;
+                }
+            }
+            Console.WriteLine("......Server END");
         }
     }
 }

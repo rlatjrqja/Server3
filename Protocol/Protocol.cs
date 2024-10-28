@@ -14,13 +14,8 @@ namespace Protocols
         public ushort CRC { get; private set;}
         Byte[] BODY;
 
-        public Protocol()
-        {
-            
-        }
-
         // 반환시 헤더 크기 반환
-        private int MakeHeader(int ver, int op, int seq, int len, int crc) 
+        public int MakeHeader(int ver, int op, int seq, int len, int crc) 
         {
             proto_VER = (Byte)ver;
             OPCODE = (ushort)op;
@@ -28,12 +23,33 @@ namespace Protocols
             LENGTH = (uint)len;
             CRC = (ushort)crc;
 
-            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort);
+            return GetSizeHeader();
+        }
+        public int MakeHeader(byte[] headerBuffer)
+        {
+            // 1바이트 복사
+            proto_VER = headerBuffer[0];
+
+            // 2바이트 복사 (OPCODE)
+            OPCODE = BitConverter.ToUInt16(headerBuffer, 1);
+
+            // 4바이트 복사 (SEQ_NO)
+            SEQ_NO = BitConverter.ToUInt32(headerBuffer, 3);
+
+            // 4바이트 복사 (LENGTH)
+            LENGTH = BitConverter.ToUInt32(headerBuffer, 7);
+
+            // 2바이트 복사 (CRC)
+            CRC = BitConverter.ToUInt16(headerBuffer, 11);
+
+            return GetSizeHeader();
         }
         public int GetSizeHeader() 
         {
-            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort);
+            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort); 
         }
+
+
         private int MakeBody(int size) 
         {
             BODY = new Byte[size];

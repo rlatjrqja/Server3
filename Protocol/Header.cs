@@ -14,33 +14,35 @@ namespace Protocols
         public uint LENGTH { get; private set; }
         public ushort CRC { get; private set; }
 
-        public Header()
-        {
-
-        }
-
         public void ByteToHeader(byte[] data)
         {
             // 1바이트 복사
             proto_VER = data[0];
 
-            // 2바이트 복사
-            byte[] opcode = new byte[2];
-            data.CopyTo(opcode, sizeof(byte));
-            OPCODE = BitConverter.ToUInt16(opcode, 0);
+            // 2바이트 복사 (OPCODE)
+            OPCODE = BitConverter.ToUInt16(data, 1);
 
-            // 4바이트 복사
-            byte[] seq = new byte[4];
-            data.CopyTo(seq, sizeof(byte) + sizeof(ushort));
-            SEQ_NO = BitConverter.ToUInt32(seq, 0);
+            // 4바이트 복사 (SEQ_NO)
+            SEQ_NO = BitConverter.ToUInt32(data, 3);
 
-            byte[] len = new byte[4];
-            data.CopyTo(len, sizeof(byte) + sizeof(ushort) + sizeof(uint));
-            SEQ_NO = BitConverter.ToUInt32(len, 0);
+            // 4바이트 복사 (LENGTH)
+            LENGTH = BitConverter.ToUInt32(data, 7);
 
-            byte[] crc = new byte[2];
-            data.CopyTo(crc, sizeof(byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint));
-            OPCODE = BitConverter.ToUInt16(crc, 0);
+            // 2바이트 복사 (CRC)
+            CRC = BitConverter.ToUInt16(data, 11);
+        }
+
+        public byte[] HeaderToByte(int ver, int op, int seq, int len, int crc)
+        {
+            byte[] header = new byte[13];
+
+            header[0] = (byte)ver;
+            Array.Copy(BitConverter.GetBytes((ushort)op), 0, header, 1, 2); // 2 bytes for OPCODE
+            Array.Copy(BitConverter.GetBytes((uint)seq), 0, header, 3, 4);  // 4 bytes for SEQ_NO
+            Array.Copy(BitConverter.GetBytes((uint)len), 0, header, 7, 4);  // 4 bytes for LENGTH
+            Array.Copy(BitConverter.GetBytes((ushort)crc), 0, header, 11, 2); // 2 bytes for CRC
+
+            return header;
         }
     }
 }
