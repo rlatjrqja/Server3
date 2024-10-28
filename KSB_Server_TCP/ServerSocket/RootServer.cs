@@ -42,6 +42,7 @@ namespace ServerSocket
             {
                 ClientHandle handle = new ClientHandle(client);
                 users.Add(handle);
+                handle.StartListening();
                 Console.WriteLine($"{DateTime.Now}_New Client Added. From~[{client.RemoteEndPoint}]");
             }
             return true;

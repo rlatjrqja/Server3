@@ -106,16 +106,15 @@ namespace Protocols
         }
 
 
-        public Byte[] TransmitFileRequest(int length, string filename) 
+        public Byte[] TransmitFileRequest(int name_legth, string name, int file_size) 
         {
             List<byte> request = new List<byte>();
-            request.AddRange(BitConverter.GetBytes(length));
-            request.AddRange(Encoding.UTF8.GetBytes(filename));
-            //request.AddRange(BitConverter.GetBytes(size));
-            //request.AddRange(file);
+            request.AddRange(BitConverter.GetBytes(name_legth));
+            request.AddRange(Encoding.UTF8.GetBytes(name));
+            request.AddRange(BitConverter.GetBytes(file_size));
             BODY = request.ToArray();
 
-            MakeHeader(1, 110, 0, BODY.Length, 0);
+            MakeHeader(0, 100, 0, BODY.Length, 0);
             List<byte> packet = new List<byte>();
             packet.Add(proto_VER);
             packet.AddRange(BitConverter.GetBytes(OPCODE));
@@ -126,23 +125,36 @@ namespace Protocols
 
             return packet.ToArray();
         }
-        public Byte[] TransmitFileResponse(int size) 
+        public Byte[] TransmitFileResponse(string filename, int size) 
         {
-            
-
-            if (size < int.MaxValue)
+            /// 파일 이름 길이 20글자 제한
+            if(filename.Length > 40)
             {
-                OPCODE = 000;
-                BODY = Encoding.UTF8.GetBytes("000 OK");
+                BODY = Encoding.UTF8.GetBytes("101_filename is too long");
+                MakeHeader(0, 101, 0, BODY.Length, 0);
             }
+
+            else if (size > int.MaxValue)
+            {
+                BODY = Encoding.UTF8.GetBytes("102_file is too big");
+                MakeHeader(0, 102, 0, BODY.Length, 0);
+            }
+
             else
             {
-                OPCODE = 001;
-                BODY = Encoding.UTF8.GetBytes("001 reject");
+                BODY = Encoding.UTF8.GetBytes("100_OK");
+                MakeHeader(0, 100, 0, BODY.Length, 0);
             }
 
-            byte[] response = new byte[GetSizeHeader() + BODY.Length];
-            return BODY;
+            List<byte> packet = new List<byte>();
+            packet.Add(proto_VER);
+            packet.AddRange(BitConverter.GetBytes(OPCODE));
+            packet.AddRange(BitConverter.GetBytes(SEQ_NO));
+            packet.AddRange(BitConverter.GetBytes(LENGTH));
+            packet.AddRange(BitConverter.GetBytes(CRC));
+            packet.AddRange(BODY);
+
+            return packet.ToArray();
         }
 
         ///....... 이런 식으로 작성하면 프로토콜 프레임이 작성되고
