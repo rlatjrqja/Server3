@@ -63,7 +63,7 @@ namespace ServerSocket
 
                             //ReceiveFile();
 
-                            string filePath = Path.Combine(@"..\..\..\..\ReceivedFile", fileName);
+                            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
                             using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                             {
                                 long totalBytesReceived = 0;

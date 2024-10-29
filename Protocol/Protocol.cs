@@ -68,15 +68,7 @@ namespace Protocols
             BODY = Encoding.UTF8.GetBytes("Connection Request");
             MakeHeader(0, 000, 0, BODY.Length, 0);
 
-            List<byte> packet = new List<byte>();
-            packet.Add(proto_VER);
-            packet.AddRange(BitConverter.GetBytes(OPCODE));
-            packet.AddRange(BitConverter.GetBytes(SEQ_NO));
-            packet.AddRange(BitConverter.GetBytes(LENGTH));
-            packet.AddRange(BitConverter.GetBytes(CRC));
-            packet.AddRange(BODY);
-
-            return packet.ToArray();
+            return PacketToByte();
         }
 
         // 서버 측에서 접속 승인하는 헤더
@@ -93,16 +85,7 @@ namespace Protocols
                 MakeHeader(0, 001, 0, BODY.Length, 0);
             }
 
-            // response = new byte[GetSizeHeader()+ BODY.Length];
-            List<byte> response = new List<byte>();
-            response.Add(proto_VER);
-            response.AddRange(BitConverter.GetBytes(OPCODE));
-            response.AddRange(BitConverter.GetBytes(SEQ_NO));
-            response.AddRange(BitConverter.GetBytes(LENGTH));
-            response.AddRange(BitConverter.GetBytes(CRC));
-            response.AddRange(BODY);
-
-            return response.ToArray();
+            return PacketToByte();
         }
 
 
@@ -115,15 +98,8 @@ namespace Protocols
             BODY = request.ToArray();
 
             MakeHeader(0, 100, 0, BODY.Length, 0);
-            List<byte> packet = new List<byte>();
-            packet.Add(proto_VER);
-            packet.AddRange(BitConverter.GetBytes(OPCODE));
-            packet.AddRange(BitConverter.GetBytes(SEQ_NO));
-            packet.AddRange(BitConverter.GetBytes(LENGTH));
-            packet.AddRange(BitConverter.GetBytes(CRC));
-            packet.AddRange(BODY);
 
-            return packet.ToArray();
+            return PacketToByte();
         }
         public Byte[] TransmitFileResponse(string filename, int size) 
         {
@@ -146,6 +122,19 @@ namespace Protocols
                 MakeHeader(0, 100, 0, BODY.Length, 0);
             }
 
+            return PacketToByte();
+        }
+
+        public Byte[] TransmitFile(byte[] binary)
+        {
+            BODY = binary;
+            MakeHeader(0, 200, 0, BODY.Length, 0);
+
+            return PacketToByte();
+        }
+
+        public Byte[] PacketToByte()
+        {
             List<byte> packet = new List<byte>();
             packet.Add(proto_VER);
             packet.AddRange(BitConverter.GetBytes(OPCODE));
