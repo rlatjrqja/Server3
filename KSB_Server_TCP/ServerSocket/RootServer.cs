@@ -6,9 +6,9 @@ namespace ServerSocket
 {
     public class RootServer
     {
-        public RootServer instance;
-        List<ClientHandle> users = new List<ClientHandle>();
-        Socket? host;
+        public RootServer instance; // 서버는 단 하나만 존재
+        Socket? host; // 서버의 호스트
+        List<ClientHandle> users = new List<ClientHandle>(); // 이 서버에서 관리하는 클라이언트 인터페이스
 
         public RootServer(string IP, int PORT)
         {
@@ -27,6 +27,7 @@ namespace ServerSocket
             /// 3way-hanshake가 가능한 상태
             if(host != null)
             {
+                /// 서버 상태 전환
                 host.Listen();
                 return true;
             }

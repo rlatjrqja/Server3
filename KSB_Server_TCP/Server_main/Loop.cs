@@ -10,7 +10,7 @@ namespace Server_main
             RootServer root = new RootServer("0.0.0.0", 50000);
             root.StartServer();
 
-            Task.Run(() =>
+            Task task = Task.Run(() =>
             {
                 while (true)
                 {
@@ -20,7 +20,7 @@ namespace Server_main
 
             
             /// 메인 스레드가 종료되지 않도록 하는 무한 루프
-            while (true)
+            while (!task.IsCompleted)
             {
                 try
                 {
