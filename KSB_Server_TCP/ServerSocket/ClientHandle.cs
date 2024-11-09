@@ -43,26 +43,12 @@ namespace ServerSocket
                         case Const.REQUEST:
                             int name_length = BitConverter.ToInt32(buffer, protocol.GetSizeHeader());
                             fileName = Encoding.UTF8.GetString(buffer, protocol.GetSizeHeader() + sizeof(int), name_length);
-                            fileSize = BitConverter.ToInt32(buffer, protocol.GetSizeHeader() + sizeof(int) + name_length);
+                            fileSize = BitConverter.ToInt32(buffer, protocol.GetSizeHeader() + sizeof(int) + name_length + fileName.Length);
 
                             byte[] response = protocol.TransmitFileResponse(fileName, fileSize);
                             host.Send(response);
                             break;
                         case Const.SENDING:
-                            /*FileStream fileStream = new FileStream(@"..\..\..\..\ReceivedFile\Test.txt", FileMode.Open, FileAccess.Read);
-                            int receiveSize = 0;
-                            while(receiveSize < fileSize)
-                            {
-                                if (length == 0) break;
-
-                                // 받은 데이터를 파일에 씁니다.
-                                fileStream.Write(buffer, 0, length);
-                                receiveSize += length;
-                            }
-                            fileStream.Close();*/
-
-                            //ReceiveFile();
-
                             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
                             using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                             {
@@ -81,12 +67,8 @@ namespace ServerSocket
                                     }
 
                                     fs.Write(fileBuffer, 0, bytesReceived);
-
-                                    //count += bytesToRead;
-                                    //Console.WriteLine(Encoding.UTF8.GetString(fileBuffer)+ "[count]"+ count);
                                     totalBytesReceived += bytesReceived;
                                 }
-
                             }
 
                             break;
