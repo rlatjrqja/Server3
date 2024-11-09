@@ -58,9 +58,7 @@ namespace ServerSocket
                                 while (totalBytesReceived < fileSize)
                                 {
                                     int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize - totalBytesReceived);
-                                    //int bytesReceived = host.Receive(fileBuffer, 0, bytesToRead, SocketFlags.None);
-                                    //int headerSize = protocol.GetSizeHeader();
-                                    buffer.CopyTo(fileBuffer,bytesToRead);
+                                    Array.Copy(buffer, protocol.GetSizeHeader(), fileBuffer, 0, bytesToRead);
 
                                     if (bytesToRead <= 0)
                                     {
