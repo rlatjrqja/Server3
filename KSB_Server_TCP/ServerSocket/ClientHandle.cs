@@ -43,7 +43,7 @@ namespace ServerSocket
                         case Const.REQUEST:
                             int name_length = BitConverter.ToInt32(buffer, protocol.GetSizeHeader());
                             fileName = Encoding.UTF8.GetString(buffer, protocol.GetSizeHeader() + sizeof(int), name_length);
-                            fileSize = BitConverter.ToInt32(buffer, protocol.GetSizeHeader() + sizeof(int) + name_length + fileName.Length);
+                            fileSize = BitConverter.ToInt32(buffer, protocol.GetSizeHeader() + sizeof(int) + name_length);
 
                             byte[] response = protocol.TransmitFileResponse(fileName, fileSize);
                             host.Send(response);
@@ -52,22 +52,24 @@ namespace ServerSocket
                             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
                             using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                             {
-                                long totalBytesReceived = 0;
-                                byte[] fileBuffer = new byte[1024];
+                                int totalBytesReceived = 0;
+                                byte[] fileBuffer = new byte[4096];
 
                                 while (totalBytesReceived < fileSize)
                                 {
                                     int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize - totalBytesReceived);
-                                    int bytesReceived = host.Receive(fileBuffer, 0, bytesToRead, SocketFlags.None);
+                                    //int bytesReceived = host.Receive(fileBuffer, 0, bytesToRead, SocketFlags.None);
+                                    //int headerSize = protocol.GetSizeHeader();
+                                    buffer.CopyTo(fileBuffer,bytesToRead);
 
-                                    if (bytesReceived <= 0)
+                                    if (bytesToRead <= 0)
                                     {
                                         Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
                                         return 102;
                                     }
 
-                                    fs.Write(fileBuffer, 0, bytesReceived);
-                                    totalBytesReceived += bytesReceived;
+                                    fs.Write(fileBuffer, totalBytesReceived, bytesToRead);
+                                    totalBytesReceived += bytesToRead;
                                 }
                             }
 

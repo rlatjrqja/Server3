@@ -25,5 +25,10 @@ namespace Protocols
             else return null;
         }
 
+        public FileInfo ByteToFile(byte[] data)
+        {
+            //FileInfo file = new FileInfo();
+            return null;
+        }
     }
 }
