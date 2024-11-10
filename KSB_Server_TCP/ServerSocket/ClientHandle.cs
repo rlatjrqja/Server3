@@ -50,25 +50,23 @@ namespace ServerSocket
                             break;
                         case Const.SENDING:
                             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
-                            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                             {
-                                int totalBytesReceived = 0;
+                                //int totalBytesReceived = 0;
                                 byte[] fileBuffer = new byte[4096];
 
-                                while (totalBytesReceived < fileSize)
+                                int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize) - protocol.GetSizeHeader();
+                                Array.Copy(buffer, protocol.GetSizeHeader(), fileBuffer, 0, bytesToRead);
+
+                                if (bytesToRead <= 0)
                                 {
-                                    int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize - totalBytesReceived);
-                                    Array.Copy(buffer, protocol.GetSizeHeader(), fileBuffer, 0, bytesToRead);
-
-                                    if (bytesToRead <= 0)
-                                    {
-                                        Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
-                                        return 102;
-                                    }
-
-                                    fs.Write(fileBuffer, totalBytesReceived, bytesToRead);
-                                    totalBytesReceived += bytesToRead;
+                                    Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
+                                    return 102;
                                 }
+
+                                fs.Position = fs.Length;
+                                fs.Write(fileBuffer, 0, bytesToRead);
+                                //totalBytesReceived += bytesToRead;
                             }
 
                             break;

@@ -11,6 +11,8 @@ namespace KSB_Client_TCP
         {
             Socket client;
             Protocol protocol = new Protocol();
+            string root = @"..\..\..\..\..\SendingFile";
+            string name = @"\Dummy2.txt";
 
             try
             {
@@ -76,7 +78,7 @@ namespace KSB_Client_TCP
                 while (count++ < 5)
                 {
                     FileConverter cv = new FileConverter();
-                    string filename = @"..\..\..\..\..\SendingFile\Dummy2.txt";
+                    string filename = root + name;
                     string fullPath = Path.GetFullPath(filename);
                     var file = new FileInfo(fullPath);
                     var binary = cv.FileToByte(file);
@@ -88,9 +90,12 @@ namespace KSB_Client_TCP
                     if (protocol.OPCODE == 100)
                     {
                         // 파일 보내도 된다 (100 OK) 받고 파일 전송
-                        byte[] packet = protocol.TransmitFile(binary);
-                        client.Send(packet);
-                        Console.WriteLine(packet.Length);
+                        List<byte[]> packets = protocol.TransmitFile(binary);
+                        for(int i = 0;i<packets.Count;i++)
+                        {
+                            client.Send(packets[i]);
+                            Console.WriteLine(packets[i].Length);
+                        }
                         break;
                     }
                     else Thread.Sleep(1000);
@@ -126,5 +131,7 @@ namespace KSB_Client_TCP
                 return false;
             }
         }
+
+        //void 
     }
 }
