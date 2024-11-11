@@ -94,7 +94,7 @@ namespace KSB_Client_TCP
                         for(int i = 0;i<packets.Count;i++)
                         {
                             client.Send(packets[i]);
-                            Console.WriteLine(packets[i].Length);
+                            Console.WriteLine($"[Send] { packets[i].Length} Byte");
                         }
                         break;
                     }

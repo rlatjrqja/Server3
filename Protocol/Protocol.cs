@@ -139,13 +139,15 @@ namespace Protocols
                 byte[] packet = new byte[headerSize + dataLength];
 
                 // 실제 데이터 배열을 생성
+                if (dataLength < 2000)
+                    Console.Write("Debug");
                 byte[] dataChunk = new byte[dataLength];
                 Array.Copy(binary, dataStartIndex, dataChunk, 0, dataLength);
                 BODY = dataChunk;
 
                 // 헤더 생성 (SEQ_NO 등 필요한 정보 포함)
                 if (seq != totalPackets - 1) MakeHeader(0, 200, seq, headerSize + dataLength, 0);
-                else MakeHeader(0, 201, seq, headerSize + dataLength, 0); // 마지막 패킷
+                else MakeHeader(0, 210, seq, headerSize + dataLength, 0); // 마지막 패킷
 
                 // 패킷 생성: 헤더와 데이터 병합
                 //Array.Copy(PacketToByte(), 0, packet, 0, headerSize); // 헤더 복사

@@ -12,6 +12,7 @@ namespace ServerSocket
     {
         public const int REQUEST = 100;
         public const int SENDING = 200;
+        public const int SENDLAST = 210;
     }
 
     internal class ClientHandle
@@ -49,24 +50,28 @@ namespace ServerSocket
                             host.Send(response);
                             break;
                         case Const.SENDING:
+                        case Const.SENDLAST:
                             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
                             using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                             {
-                                //int totalBytesReceived = 0;
                                 byte[] fileBuffer = new byte[4096];
 
-                                int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize) - protocol.GetSizeHeader();
+                                int bytesToRead = (int)Math.Min(fileBuffer.Length, protocol.LENGTH) - protocol.GetSizeHeader();
+
+                                /*if (protocol.OPCODE == Const.SENDLAST)
+                                    Console.Write("Last ");*/
+                                Console.WriteLine($"[Receive] ({protocol.SEQ_NO})\tHeader:{protocol.GetSizeHeader()}Byte + Body:{bytesToRead}Byte");
+
                                 Array.Copy(buffer, protocol.GetSizeHeader(), fileBuffer, 0, bytesToRead);
 
                                 if (bytesToRead <= 0)
                                 {
                                     Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
-                                    return 102;
+                                    return 201;
                                 }
 
                                 fs.Position = fs.Length;
                                 fs.Write(fileBuffer, 0, bytesToRead);
-                                //totalBytesReceived += bytesToRead;
                             }
 
                             break;
