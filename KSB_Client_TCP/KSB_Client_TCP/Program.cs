@@ -12,7 +12,7 @@ namespace KSB_Client_TCP
             Socket client;
             Protocol protocol = new Protocol();
             string root = @"..\..\..\..\..\SendingFile";
-            string name = @"\Dummy2.txt";
+            string name = @"\Dummy.xlsx";
 
             try
             {
@@ -77,11 +77,24 @@ namespace KSB_Client_TCP
                 // 보낼 파일 준비
                 while (count++ < 5)
                 {
-                    FileConverter cv = new FileConverter();
+                    //FileConverter cv = new FileConverter();
                     string filename = root + name;
                     string fullPath = Path.GetFullPath(filename);
                     var file = new FileInfo(fullPath);
-                    var binary = cv.FileToByte(file);
+                    byte[] binary = new byte[file.Length]; // 바이너리 버퍼
+
+                    ///
+                    // 파일이 존재하는지
+                    if (file.Exists)
+                    {
+                        var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+
+                        // 파일을 IO로 읽어온다.
+                        stream.Read(binary, 0, binary.Length);
+                        //return binary;
+                    }
+                    //else return null;
+                    ///
 
                     byte[] request = protocol.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
                     client.Send(request);
