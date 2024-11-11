@@ -49,19 +49,6 @@ namespace Protocols
             return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort); 
         }
 
-
-        private int MakeBody(int size) 
-        {
-            BODY = new Byte[size];
-
-            return size;
-        }
-
-        public Byte[] GetLastPacket() 
-        {
-            return null;   
-        }
-
         // 클라 측에서 접속 요청하는 헤더
         public Byte[] StartConnectionRequest() 
         {
