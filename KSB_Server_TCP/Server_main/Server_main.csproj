@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServerSocket\ServerSocket.csproj" />
+    <ProjectReference Include="..\..\Protocol\Protocols.csproj" />
   </ItemGroup>
 
 </Project>

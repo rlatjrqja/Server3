@@ -34,19 +34,21 @@ namespace ServerSocket
             else return false;
         }
 
-        public bool RunServer()
+        public ClientHandle RunServer()
         {
-            Socket? client = AddUsers();
+            Socket client = host.Accept();
+            ClientHandle handle = new ClientHandle(client);
+            Console.WriteLine($"{DateTime.Now}_New Client Added. From~[{handle.host.RemoteEndPoint}]");
 
             /// OPCODE 000을 받았다면 Handle로 발전시켜 관리
-            if (client != null)
+            /*if (client != null)
             {
-                ClientHandle handle = new ClientHandle(client);
+                //ClientHandle handle = new ClientHandle(client);
                 users.Add(handle);
                 handle.StartListening();
                 Console.WriteLine($"{DateTime.Now}_New Client Added. From~[{client.RemoteEndPoint}]");
-            }
-            return true;
+            }*/
+            return handle;
         }
 
         public Socket? AddUsers()

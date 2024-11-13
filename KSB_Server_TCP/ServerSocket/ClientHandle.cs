@@ -15,9 +15,9 @@ namespace ServerSocket
         public const int SENDLAST = 210;
     }
 
-    internal class ClientHandle
+    public class ClientHandle
     {
-        Socket host;
+        public Socket host;
 
         string fileName;
         int fileSize;
