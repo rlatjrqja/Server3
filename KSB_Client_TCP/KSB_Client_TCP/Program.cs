@@ -96,17 +96,18 @@ namespace KSB_Client_TCP
                     //else return null;
                     ///
 
-                    byte[] request = protocol.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
-                    client.Send(request);
+                    byte[] request = Protocol1_File.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
+                    byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
+                    client.Send(data);
                     Console.WriteLine("파일 전송 가능 상태 확인");
 
                     if (protocol.OPCODE == 100)
                     {
                         // 파일 보내도 된다 (100 OK) 받고 파일 전송
-                        List<byte[]> packets = protocol.TransmitFile(binary);
+                        List<byte[]> packets = Protocol1_File.TransmitFile(binary);
                         for(int i = 0;i<packets.Count;i++)
                         {
-                            client.Send(packets[i]);
+                            client.Send(Header.MakePacket(0,200,i, packets[i].Length,0, packets[i]));
                             Console.WriteLine($"[Send] { packets[i].Length} Byte");
                         }
                         break;

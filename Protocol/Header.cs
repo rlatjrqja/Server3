@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,9 +27,9 @@ namespace Protocols
         public uint SEQ_NO { get; private set; }
         public uint LENGTH { get; private set; }
         public ushort CRC { get; private set; }
-        public Byte[] BODY;
+        public Byte[] BODY { get; private set; }
 
-        public int MakePacket(byte[] packet)
+        public int MakeHeader(byte[] packet)
         {
             // 1바이트 복사
             proto_VER = packet[0];
@@ -45,9 +46,23 @@ namespace Protocols
             // 2바이트 복사 (CRC)
             CRC = BitConverter.ToUInt16(packet, 11);
 
-            Array.Copy(packet, 13, BODY, 0, packet.Length - 13);
+            BODY = new Byte[LENGTH];
+            Array.Copy(packet, 13, BODY, 0, LENGTH);
 
-            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort);
+            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + (int)LENGTH;
+        }
+
+        public static byte[] MakePacket(int ver, int op, int seq, int len, int crc, byte[] data)
+        {
+            List<byte> packet = new List<byte>();
+            packet.Add((Byte)ver);
+            packet.AddRange(BitConverter.GetBytes((ushort)op));
+            packet.AddRange(BitConverter.GetBytes((uint)seq));
+            packet.AddRange(BitConverter.GetBytes((uint)len));
+            packet.AddRange(BitConverter.GetBytes((ushort)crc));
+            packet.AddRange(data);
+
+            return packet.ToArray();
         }
     }
 }
