@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Protocols
 {
-    internal class Protocol0_Plain
+    internal class Protocol2_Plain
     {
     }
 }

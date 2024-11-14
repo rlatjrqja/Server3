@@ -1,11 +1,5 @@
 ﻿using Protocols;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server_main
 {
@@ -30,6 +24,12 @@ namespace Server_main
                         case Const.CONNECT_REQUEST:
                             ConnectionRequestRecv();
                             break;
+                        case Const.FILE_REQUEST:
+                            SendFileRequestRecv();
+
+                            break;
+                        case Const.SENDING:
+                            break;
                     }
                 }
             });
@@ -47,7 +47,17 @@ namespace Server_main
 
         void ConnectionRequestRecv()
         {
+            foreach(var handle in RootServer.instance.users)
+            {
+                if(handle == this) return;
+            }
+            
             RootServer.instance.users.Add(this);
+        }
+
+        void SendFileRequestRecv()
+        {
+
         }
     }
 }

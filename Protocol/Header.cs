@@ -10,6 +10,7 @@ namespace Protocols
     public static class Const
     {
         public const int CONNECT_REQUEST = 000;
+        public const int CONNECT_REJECT = 001;
         public const int FILE_REQUEST = 100;
         public const int SENDING = 200;
         public const int SENDLAST = 210;
