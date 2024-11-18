@@ -9,138 +9,85 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            Socket client;
-            Protocol protocol = new Protocol();
-            string root = @"..\..\..\..\..\SendingFile";
-            string name = @"\Dummy.xlsx";
+            Socket host;
 
-            try
+            //string ip = "172.18.27.199";
+            string ip = "192.168.45.232";
+            int port = 50000;
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
+            host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            host.Connect(ipep);
+
+            /// 접속 요청
             {
-                // Socket 수준에서 연결
-                //string ip = "172.18.27.199";
-                string ip = "192.168.45.232";
-                int port = 50000;
-                IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
-                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                client.Connect(ipep);
+                Protocol protocol = new Protocol();
+                byte[] request = protocol.StartConnectionRequest();
+                host.Send(request);
+                Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
+            }
 
-
-
-                Task.Run(() => 
+            /// 응답 대기
+            {
+                Header header = WaitForServerResponse(host);
+                if (header.OPCODE == 000)
                 {
-                    while (true)
-                    {
-                        if(ReceivePacket(client, protocol))
-                        {
-                            switch (protocol.OPCODE)
-                            {
-                                case 000:
-                                    Console.WriteLine("서버 접속 성공");
-                                    break;
-                                case 100:
-                                    Console.WriteLine("파일 전송 가능");
-                                    //client.Send(BitConverter.GetBytes(400));
-                                    break;
-                                case 101:
-                                    Console.WriteLine("파일명으로 인한 전송 실패");
-                                    break;
-                                case 102:
-                                    Console.WriteLine("파일 크기로 인한 전송 실패");
-                                    break;
-                                case 200:
-
-                                    break;
-                                case 500:
-                                    return;
-                                default:
-                                    Console.WriteLine("디버깅");
-                                    break;
-                            }
-                        }
-                    }
-                });
-                
-
-                // 연결 요청
-                int count = 0;
-                while (count++ < 5)
-                {
-                    byte[] request = protocol.StartConnectionRequest();
-                    client.Send(request);
-                    Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
-
-                    if (protocol.OPCODE == 000) break;
-                    else Thread.Sleep(1000);
+                    Console.WriteLine("서버 접속 성공");
                 }
-                count = 0;
-
-                // 보낼 파일 준비
-                while (count++ < 5)
+                else
                 {
-                    //FileConverter cv = new FileConverter();
-                    string filename = root + name;
-                    string fullPath = Path.GetFullPath(filename);
-                    var file = new FileInfo(fullPath);
-                    byte[] binary = new byte[file.Length]; // 바이너리 버퍼
-
-                    ///
-                    // 파일이 존재하는지
-                    if (file.Exists)
-                    {
-                        var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
-
-                        // 파일을 IO로 읽어온다.
-                        stream.Read(binary, 0, binary.Length);
-                        //return binary;
-                    }
-                    //else return null;
-                    ///
-
-                    byte[] request = Protocol1_File.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
-                    byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
-                    client.Send(data);
-                    Console.WriteLine("파일 전송 가능 상태 확인");
-
-                    if (protocol.OPCODE == 100)
-                    {
-                        // 파일 보내도 된다 (100 OK) 받고 파일 전송
-                        List<byte[]> packets = Protocol1_File.TransmitFile(binary);
-                        for(int i = 0;i<packets.Count;i++)
-                        {
-                            client.Send(Header.MakePacket(0,200,i, packets[i].Length,0, packets[i]));
-                            Console.WriteLine($"[Send] { packets[i].Length} Byte");
-                        }
-                        break;
-                    }
-                    else Thread.Sleep(1000);
+                    Console.WriteLine("서버 접속 실패");
+                    return;
                 }
             }
-            catch (Exception e) { Console.WriteLine(e.Message); }
+
+
+            /// 파일 전송 프로토콜
+            {
+                string root = @"..\..\..\..\..\SendingFile";
+                string name = @"\Dummy.xlsx";
+
+                string filename = root + name;
+                string fullPath = Path.GetFullPath(filename);
+                var file = new FileInfo(fullPath);
+                byte[] binary = new byte[file.Length]; // 바이너리 버퍼
+
+                if (file.Exists)
+                {
+                    var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+                    stream.Read(binary, 0, binary.Length);
+                }
+
+                byte[] request = Protocol1_File.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
+                byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
+                host.Send(data);
+                Console.WriteLine("파일 전송 가능 상태 확인");
+
+                Header header = WaitForServerResponse(host);
+                if (header.OPCODE == 100)
+                {
+                    // 파일 보내도 된다 (100 OK) 받고 파일 전송
+                    List<byte[]> packets = Protocol1_File.TransmitFile(binary);
+                    for (int i = 0; i < packets.Count; i++)
+                    {
+                        host.Send(Header.MakePacket(0, 200, i, packets[i].Length, 0, packets[i]));
+                        Console.WriteLine($"[Send] {packets[i].Length} Byte");
+                    }
+                }
+                else Thread.Sleep(1000);
+            }
         }
 
-        static bool ReceivePacket(Socket socket, Protocol protocol)
+        private static Header WaitForServerResponse(Socket host)
         {
-            byte[] buffer = new byte[1024];
-            try
+            byte[] buffer = new byte[4096];
+            int bytesReceived = host.Receive(buffer);
+            if (bytesReceived > 0)
             {
-                int bytesReceived = socket.Receive(buffer);
-                if (bytesReceived > 0)
-                {
-                    protocol.MakeHeader(buffer);
-
-                    string msg = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
-                    Console.Write(msg);
-                    return true;
-                }
-                return false;
+                Header header = new Header();
+                header.MakeHeader(buffer);
+                return header;
             }
-            catch (SocketException ex)
-            {
-                Console.WriteLine($"수신 중 오류 발생: {ex.Message}");
-                return false;
-            }
+            return null;
         }
-
-        //void 
     }
 }

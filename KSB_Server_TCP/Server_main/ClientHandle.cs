@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace Server_main
@@ -57,10 +58,21 @@ namespace Server_main
             /// 이미 접속한 유저면 접속 요청 무시
             foreach(var handle in RootServer.instance.users)
             {
-                if(handle == this) return;
+                if (handle == this)
+                {
+                    byte[] body = Encoding.UTF8.GetBytes("001 reject");
+                    byte[] data = Header.MakePacket(0, 001, 0, body.Length, 0, body);
+                    host.Send(data);
+                    return;
+                }
             }
-            
-            RootServer.instance.users.Add(this);
+
+            {
+                RootServer.instance.users.Add(this);
+                byte[] body = Encoding.UTF8.GetBytes("000 OK");
+                byte[] data = Header.MakePacket(0, 000, 0, body.Length, 0, body);
+                host.Send(data);
+            }
         }
 
         void SendFileRequestRecv(Header header)
