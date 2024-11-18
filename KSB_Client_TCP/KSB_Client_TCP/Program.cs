@@ -114,11 +114,6 @@ namespace KSB_Client_TCP
                     }
                     else Thread.Sleep(1000);
                 }
-
-                while (true)
-                {
-
-                }
             }
             catch (Exception e) { Console.WriteLine(e.Message); }
         }

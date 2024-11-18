@@ -9,7 +9,8 @@ namespace Server_main
     public class ClientHandle
     {
         public Socket host;
-        Protocol1_File pf;
+        List<Protocol1_File_Log> log_protocol1 = new List<Protocol1_File_Log>();
+        //Protocol1_File_Log pf;
 
         public ClientHandle(Socket client)
         {
@@ -19,6 +20,7 @@ namespace Server_main
             {
                 while (true)
                 {
+                    /// 받은 데이터를 헤더(13바이트), 내용물로 분리
                     byte[] packet = StartListening();
                     Header header = new Header();
                     header.MakeHeader(packet);
@@ -26,13 +28,13 @@ namespace Server_main
                     switch(header.OPCODE)
                     {
                         case Const.CONNECT_REQUEST:
-                            ConnectionRequestRecv();
+                            ConnectionRequestRecv(); /// 접속 요청
                             break;
                         case Const.FILE_REQUEST:
-                            SendFileRequestRecv(header);
+                            SendFileRequestRecv(header); /// 파일 좀 받아줘 (업로드)
                             break;
                         case Const.SENDING:
-                            FileReceied(header);
+                            FileReceied(header); /// 파일 보내는 중
                             break;
                     }
                 }
@@ -41,6 +43,7 @@ namespace Server_main
 
         public byte[] StartListening()
         {
+            /// 최대 4096 바이트를 받음, 바이트 수 딱 맞게 줄여서 반환
             byte[] buffer = new byte[4096];
             int length = host.Receive(buffer);
             byte[] lawData = new byte[length];
@@ -51,6 +54,7 @@ namespace Server_main
 
         void ConnectionRequestRecv()
         {
+            /// 이미 접속한 유저면 접속 요청 무시
             foreach(var handle in RootServer.instance.users)
             {
                 if(handle == this) return;
@@ -61,21 +65,22 @@ namespace Server_main
 
         void SendFileRequestRecv(Header header)
         {
+            /// 파일 내용물에도 헤더가 있음, 이름 및 크기
             byte[] stream = header.BODY;
             int fileName_length = BitConverter.ToInt32(stream, 0);
             string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
             int fileSize = BitConverter.ToInt32(stream, sizeof(int) + fileName_length);
 
+            /// 파일 이름과 크기가 적절한지
             byte[] response = Protocol1_File.TransmitFileResponse(fileName, fileSize);
-            byte[] data = Header.MakePacket(header.proto_VER, 100, 0, response.Length, 0, response);
+
+            /// 
+            byte[] data = Header.MakePacket(header.proto_VER, header.OPCODE, 0, response.Length, 0, response);
 
             host.Send(data);
 
             // 임시
-            pf = new Protocol1_File();
-            pf.file_size = fileSize;
-            pf.name = fileName;
-            pf.name_legth = fileName_length;
+            log_protocol1.Add(new Protocol1_File_Log(fileSize, fileName, fileName_length));
         }
 
         void FileReceied(Header header)
@@ -85,6 +90,7 @@ namespace Server_main
             string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);*/
 
+            Protocol1_File_Log pf = log_protocol1.Last();
             int fileName_length = pf.name_legth;
             string fileName = pf.name;
             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);

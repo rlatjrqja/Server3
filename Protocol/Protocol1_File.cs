@@ -6,12 +6,22 @@ using System.Threading.Tasks;
 
 namespace Protocols
 {
-    public class Protocol1_File
+    public class Protocol1_File_Log
     {
         public int name_legth;
         public string name;
         public int file_size;
 
+        public Protocol1_File_Log(int Name_Length, string Name_, int File_Size)
+        {
+            name_legth = Name_Length;
+            name = Name_;
+            file_size = File_Size;
+        }
+    }
+
+    public class Protocol1_File
+    {
         public static Byte[] TransmitFileRequest(int name_legth, string name, int file_size)
         {
             List<byte> request = new List<byte>();
@@ -25,17 +35,21 @@ namespace Protocols
             /// 파일 이름 길이 20글자 제한
             if (filename.Length > 40)
             {
-                return Encoding.UTF8.GetBytes("101_filename is too long");
+                //return Encoding.UTF8.GetBytes("101_filename is too long");
+                return BitConverter.GetBytes(101);
+                
             }
 
             else if (size > int.MaxValue)
             {
-                return Encoding.UTF8.GetBytes("102_file is too big");
+                //return Encoding.UTF8.GetBytes("102_file is too big");
+                return BitConverter.GetBytes(102);
             }
 
             else
             {
-                return Encoding.UTF8.GetBytes("100_OK");
+                //return Encoding.UTF8.GetBytes("100_OK");
+                return BitConverter.GetBytes(100);
             }
         }
 
