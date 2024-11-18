@@ -6,9 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Encryption\Encryption.csproj" />
-    <ProjectReference Include="..\..\Protocol\Protocols.csproj" />
-  </ItemGroup>
-
 </Project>

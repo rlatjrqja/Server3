@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server_main", "Server_main\Server_main.csproj", "{AA9D8EB9-D9E8-42E0-B29A-AE471292B266}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server_main", "Server_main\Server_main.csproj", "{AA9D8EB9-D9E8-42E0-B29A-AE471292B266}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSocket", "ServerSocket\ServerSocket.csproj", "{9FA286A7-05CF-4D72-BB35-BA8C494F837D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSocket", "ServerSocket\ServerSocket.csproj", "{9FA286A7-05CF-4D72-BB35-BA8C494F837D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Protocols.csproj", "{F08B1688-2C34-48F7-9183-41DD1D056CC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Encryption", "..\Encryption\Encryption.csproj", "{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{F08B1688-2C34-48F7-9183-41DD1D056CC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F08B1688-2C34-48F7-9183-41DD1D056CC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F08B1688-2C34-48F7-9183-41DD1D056CC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -47,7 +47,7 @@ namespace Protocols
             CRC = BitConverter.ToUInt16(packet, 11);
 
             BODY = new Byte[LENGTH];
-            Array.Copy(packet, 13, BODY, 0, LENGTH);
+            Array.Copy(packet, 16, BODY, 0, LENGTH);
 
             return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + (int)LENGTH;
         }
@@ -60,6 +60,7 @@ namespace Protocols
             packet.AddRange(BitConverter.GetBytes((uint)seq));
             packet.AddRange(BitConverter.GetBytes((uint)len));
             packet.AddRange(BitConverter.GetBytes((ushort)crc));
+            packet.AddRange(new Byte[3] { 0x00,0x00,0x00 }); /// 헤더를 16 바이트로 만들기 위한 발버둥
             packet.AddRange(data);
 
             return packet.ToArray();

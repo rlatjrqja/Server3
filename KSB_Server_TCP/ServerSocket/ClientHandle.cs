@@ -32,7 +32,7 @@ namespace ServerSocket
                             ConnectionRequestRecv(); /// 접속 요청
                             break;
                         case Const.FILE_REQUEST:
-                            SendFileRequestRecv(header); /// 파일 좀 받아줘 (업로드)
+                            FileUploadRequestRecv(header); /// 파일 좀 받아줘 (업로드)
                             break;
                         case Const.SENDING:
                             FileReceied(header); /// 파일 보내는 중
@@ -75,7 +75,7 @@ namespace ServerSocket
             }
         }
 
-        void SendFileRequestRecv(Header header)
+        void FileUploadRequestRecv(Header header)
         {
             /// 파일 내용물에도 헤더가 있음, 이름 및 크기
             byte[] stream = header.BODY;
@@ -97,7 +97,11 @@ namespace ServerSocket
 
         void FileReceied(Header header)
         {
-            byte[] stream = header.BODY;
+            byte[] encryptedStream = header.BODY; // 암호화된 데이터
+
+            // AES 복호화: 클라이언트에서 사용한 Key와 IV를 서버에서 동일하게 설정해야 함
+            AES aes = new AES();
+            byte[] decryptedStream = aes.DecryptData(encryptedStream);
 
             Protocol1_File_Log pf = log_protocol1.Last();
             int fileName_length = pf.name_legth;
@@ -106,23 +110,21 @@ namespace ServerSocket
 
             using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
             {
-                byte[] fileBuffer = new byte[4096];
+                int bytesToRead = (int)Math.Min(decryptedStream.Length, header.LENGTH);
 
-                int bytesToRead = (int)Math.Min(fileBuffer.Length, header.LENGTH);
-
-                Console.WriteLine($"[Receive] ({header.SEQ_NO})\tHeader:{13}Byte + Body:{bytesToRead}Byte");
-
-                Array.Copy(stream, 0, fileBuffer, 0, bytesToRead);
+                Console.WriteLine($"[Receive] ({header.SEQ_NO})\tHeader:{16}Byte + Body:{bytesToRead}Byte");
 
                 if (bytesToRead <= 0)
                 {
                     Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
-                    //return 201;
+                    return;
                 }
 
+                // Append decrypted data to the file
                 fs.Position = fs.Length;
-                fs.Write(fileBuffer, 0, bytesToRead);
+                fs.Write(decryptedStream, 0, bytesToRead);
             }
         }
+
     }
 }

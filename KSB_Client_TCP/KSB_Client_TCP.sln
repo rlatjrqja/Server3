@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSB_Client_TCP", "KSB_Client_TCP\KSB_Client_TCP.csproj", "{34AC3A7B-550F-407C-922B-6021A00489D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KSB_Client_TCP", "KSB_Client_TCP\KSB_Client_TCP.csproj", "{34AC3A7B-550F-407C-922B-6021A00489D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Protocols.csproj", "{83C8A0B7-1DF4-4363-A553-CB6B1025936F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Encryption\Encryption.csproj", "{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -56,7 +56,7 @@ namespace Protocols
         public static List<Byte[]> TransmitFile(byte[] binary)
         {
             List<Byte[]> packets = new List<Byte[]>();
-            int headerSize = 13;
+            int headerSize = 16;
             int maxDataSize = 4096 - headerSize;
             int totalPackets = (int)Math.Ceiling((double)binary.Length / maxDataSize);
 
