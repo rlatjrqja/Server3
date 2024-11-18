@@ -8,163 +8,120 @@ using System.Threading.Tasks;
 
 namespace ServerSocket
 {
-    static class Const
-    {
-        public const int REQUEST = 100;
-        public const int SENDING = 200;
-        public const int SENDLAST = 210;
-    }
-
     public class ClientHandle
     {
         public Socket host;
+        List<Protocol1_File_Log> log_protocol1 = new List<Protocol1_File_Log>();
 
-        string fileName;
-        int fileSize;
-
-        public ClientHandle(Socket client) 
+        public ClientHandle(Socket client)
         {
             host = client;
-        }
 
-        public void StartListening()
-        {
             Task.Run(() =>
             {
                 while (true)
                 {
-                    byte[] buffer = new byte[4096];
-                    int length = host.Receive(buffer);
+                    /// 받은 데이터를 헤더(13바이트), 내용물로 분리
+                    byte[] packet = StartListening();
+                    Header header = new Header();
+                    header.MakeHeader(packet);
 
-                    Protocol protocol = new Protocol();
-                    protocol.MakeHeader(buffer);
-
-                    switch (protocol.OPCODE)
+                    switch (header.OPCODE)
                     {
-                        case Const.REQUEST:
-                            int name_length = BitConverter.ToInt32(buffer, protocol.GetSizeHeader());
-                            fileName = Encoding.UTF8.GetString(buffer, protocol.GetSizeHeader() + sizeof(int), name_length);
-                            fileSize = BitConverter.ToInt32(buffer, protocol.GetSizeHeader() + sizeof(int) + name_length);
-
-                            byte[] response = protocol.TransmitFileResponse(fileName, fileSize);
-                            host.Send(response);
+                        case Const.CONNECT_REQUEST:
+                            ConnectionRequestRecv(); /// 접속 요청
+                            break;
+                        case Const.FILE_REQUEST:
+                            SendFileRequestRecv(header); /// 파일 좀 받아줘 (업로드)
                             break;
                         case Const.SENDING:
-                        case Const.SENDLAST:
-                            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
-                            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
-                            {
-                                byte[] fileBuffer = new byte[4096];
-
-                                int bytesToRead = (int)Math.Min(fileBuffer.Length, protocol.LENGTH) - protocol.GetSizeHeader();
-
-                                /*if (protocol.OPCODE == Const.SENDLAST)
-                                    Console.Write("Last ");*/
-                                Console.WriteLine($"[Receive] ({protocol.SEQ_NO})\tHeader:{protocol.GetSizeHeader()}Byte + Body:{bytesToRead}Byte");
-
-                                Array.Copy(buffer, protocol.GetSizeHeader(), fileBuffer, 0, bytesToRead);
-
-                                if (bytesToRead <= 0)
-                                {
-                                    Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
-                                    return 201;
-                                }
-
-                                fs.Position = fs.Length;
-                                fs.Write(fileBuffer, 0, bytesToRead);
-                            }
-
-                            break;
-                        default:
-                            Console.WriteLine("미구현 OPCODE");
-                            Thread.Sleep(1000);
+                            FileReceied(header); /// 파일 보내는 중
                             break;
                     }
                 }
             });
         }
 
-        public int ReceiveFile()
+        public byte[] StartListening()
         {
-            try
+            /// 최대 4096 바이트를 받음, 바이트 수 딱 맞게 줄여서 반환
+            byte[] buffer = new byte[4096];
+            int length = host.Receive(buffer);
+            byte[] lawData = new byte[length];
+            Array.Copy(buffer, lawData, length);
+
+            return lawData;
+        }
+
+        void ConnectionRequestRecv()
+        {
+            /// 이미 접속한 유저면 접속 요청 무시
+            foreach (var handle in RootServer.instance.users)
             {
-                if (host.Connected)
+                if (handle == this)
                 {
+                    byte[] body = Encoding.UTF8.GetBytes("001 reject");
+                    byte[] data = Header.MakePacket(0, 001, 0, body.Length, 0, body);
+                    host.Send(data);
+                    return;
+                }
+            }
 
+            {
+                RootServer.instance.users.Add(this);
+                byte[] body = Encoding.UTF8.GetBytes("000 OK");
+                byte[] data = Header.MakePacket(0, 000, 0, body.Length, 0, body);
+                host.Send(data);
+            }
+        }
 
-                    // 2. 파일 이름 길이 수신 (4바이트 - int형)
-                    byte[] fileNameLengthBuffer = new byte[4];
-                    int bytesRead = host.Receive(fileNameLengthBuffer, 0, fileNameLengthBuffer.Length, SocketFlags.None);
-                    if (bytesRead <= 0)
-                    {
-                        Console.WriteLine("파일 이름 길이를 수신하는 중 연결이 끊겼습니다.");
-                        return 101;
-                    }
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(fileNameLengthBuffer);
-                    int fileNameLength = BitConverter.ToInt32(fileNameLengthBuffer, 0);
+        void SendFileRequestRecv(Header header)
+        {
+            /// 파일 내용물에도 헤더가 있음, 이름 및 크기
+            byte[] stream = header.BODY;
+            int fileName_length = BitConverter.ToInt32(stream, 0);
+            string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
+            int fileSize = BitConverter.ToInt32(stream, sizeof(int) + fileName_length);
 
-                    // 3. 파일 이름 수신
-                    byte[] fileNameBuffer = new byte[fileNameLength];
-                    bytesRead = host.Receive(fileNameBuffer, 0, fileNameBuffer.Length, SocketFlags.None);
-                    if (bytesRead <= 0)
-                    {
-                        Console.WriteLine("파일 이름을 수신하는 중 연결이 끊겼습니다.");
-                        return 101;
-                    }
-                    //if (BitConverter.IsLittleEndian) Array.Reverse(fileNameLengthBuffer);
+            /// 파일 이름과 크기가 적절한지
+            byte[] response = Protocol1_File.TransmitFileResponse(fileName, fileSize);
 
-                    string fileName = Encoding.UTF8.GetString(fileNameBuffer);
-                    Console.WriteLine($"수신할 파일 이름: {fileName}");
+            /// 
+            byte[] data = Header.MakePacket(header.proto_VER, header.OPCODE, 0, response.Length, 0, response);
 
-                    // 1. 파일 크기 수신 (8바이트 - long형)
-                    byte[] fileSizeBuffer = new byte[8];
-                    bytesRead = host.Receive(fileSizeBuffer, 0, fileSizeBuffer.Length, SocketFlags.None);
-                    if (bytesRead <= 0)
-                    {
-                        Console.WriteLine("파일 크기를 수신하는 중 연결이 끊겼습니다.");
-                        return 102;
-                    }
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(fileSizeBuffer);
-                    long fileSize = BitConverter.ToInt64(fileSizeBuffer, 0);
-                    Console.WriteLine($"수신할 파일 크기: {fileSize} 바이트");
+            host.Send(data);
 
-                    // 4. 파일 데이터 수신
-                    string filePath = Path.Combine(@"..\..\..\..\ReceivedFile", fileName); // 저장 경로 설정
-                    using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                    {
-                        long totalBytesReceived = 0;
-                        byte[] fileBuffer = new byte[1024];
+            // 임시
+            log_protocol1.Add(new Protocol1_File_Log(fileSize, fileName, fileName_length));
+        }
 
-                        while (totalBytesReceived < fileSize)
-                        {
-                            int bytesToRead = (int)Math.Min(fileBuffer.Length, fileSize - totalBytesReceived);
-                            int bytesReceived = host.Receive(fileBuffer, 0, bytesToRead, SocketFlags.None);
+        void FileReceied(Header header)
+        {
+            byte[] stream = header.BODY;
 
-                            if (bytesReceived <= 0)
-                            {
-                                Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
-                                return 102;
-                            }
+            Protocol1_File_Log pf = log_protocol1.Last();
+            int fileName_length = pf.name_legth;
+            string fileName = pf.name;
+            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
 
-                            fs.Write(fileBuffer, 0, bytesReceived);
+            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                byte[] fileBuffer = new byte[4096];
 
-                            //count += bytesToRead;
-                            //Console.WriteLine(Encoding.UTF8.GetString(fileBuffer)+ "[count]"+ count);
-                            totalBytesReceived += bytesReceived;
-                        }
+                int bytesToRead = (int)Math.Min(fileBuffer.Length, header.LENGTH);
 
-                    }
+                Console.WriteLine($"[Receive] ({header.SEQ_NO})\tHeader:{13}Byte + Body:{bytesToRead}Byte");
 
-                    Console.WriteLine($"파일 {fileName} 수신 완료.");
-                    return 100;
+                Array.Copy(stream, 0, fileBuffer, 0, bytesToRead);
+
+                if (bytesToRead <= 0)
+                {
+                    Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
+                    //return 201;
                 }
 
-                return 300;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ReceiveFile 오류: {ex.Message}");
-                return 301;
+                fs.Position = fs.Length;
+                fs.Write(fileBuffer, 0, bytesToRead);
             }
         }
     }
