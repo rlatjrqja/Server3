@@ -20,8 +20,8 @@ namespace KSB_Client_TCP
 
             /// 접속 요청
             {
-                Protocol protocol = new Protocol();
-                byte[] request = protocol.StartConnectionRequest();
+                byte[] body = Encoding.UTF8.GetBytes("Connection Request");
+                byte[] request = Header.MakePacket(0, 000, 0, body.Length, 0, body);
                 host.Send(request);
                 Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
             }
@@ -29,15 +29,7 @@ namespace KSB_Client_TCP
             /// 응답 대기
             {
                 Header header = WaitForServerResponse(host);
-                if (header.OPCODE == 000)
-                {
-                    Console.WriteLine("서버 접속 성공");
-                }
-                else
-                {
-                    Console.WriteLine("서버 접속 실패");
-                    return;
-                }
+                if(!CheckOPCODE(header, 000, "서버 접속 성공", "서버 접속 실패")) return;
             }
 
 
@@ -63,7 +55,7 @@ namespace KSB_Client_TCP
                 Console.WriteLine("파일 전송 가능 상태 확인");
 
                 Header header = WaitForServerResponse(host);
-                if (header.OPCODE == 100)
+                if (CheckOPCODE(header, 100, "파일 전송 가능", "파일 전송 불가"))
                 {
                     // 파일 보내도 된다 (100 OK) 받고 파일 전송
                     List<byte[]> packets = Protocol1_File.TransmitFile(binary);
@@ -73,7 +65,6 @@ namespace KSB_Client_TCP
                         Console.WriteLine($"[Send] {packets[i].Length} Byte");
                     }
                 }
-                else Thread.Sleep(1000);
             }
         }
 
@@ -88,6 +79,20 @@ namespace KSB_Client_TCP
                 return header;
             }
             return null;
+        }
+
+        private static bool CheckOPCODE(Header hd, int opcode, string correctMSG, string failMSG)
+        {
+            if(hd.OPCODE == opcode)
+            {
+                Console.WriteLine(correctMSG);
+                return true;
+            }
+            else
+            {
+                Console.WriteLine(failMSG);
+                return false;
+            }
         }
     }
 }
