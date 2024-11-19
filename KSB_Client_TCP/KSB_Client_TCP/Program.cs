@@ -10,9 +10,9 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            //string ip = "172.18.27.199";
-            string ip = "192.168.45.232";
-            int port = 50000;
+            string ip = "172.18.27.199";
+            //string ip = "192.168.45.232";
+            int port = 50001;
             string rootDir = @"..\..\..\..\..\SendingFile";
             string name = @"\Dummy.xlsx";
 

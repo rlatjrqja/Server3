@@ -20,13 +20,14 @@ public class AES
             aes.IV = iv;
             aes.Padding = PaddingMode.PKCS7;
 
-            using (MemoryStream memoryStream = new MemoryStream())
-            using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-            {
-                cryptoStream.Write(data, 0, data.Length);
-                cryptoStream.FlushFinalBlock();
-                return memoryStream.ToArray();
-            }
+            using MemoryStream memoryStream = new MemoryStream();
+            using CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+
+            cryptoStream.Write(data, 0, data.Length);
+            cryptoStream.FlushFinalBlock();
+
+            Console.WriteLine("S " + memoryStream.ToArray().ToString());
+            return memoryStream.ToArray();
         }
     }
 
@@ -43,20 +44,19 @@ public class AES
             aes.IV = iv;
             aes.Padding = PaddingMode.PKCS7;
 
-            using (MemoryStream memoryStream = new MemoryStream())
-            using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write))
+            using MemoryStream memoryStream = new MemoryStream();
+            using CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
+            try
             {
-                try
-                {
-                    cryptoStream.Write(encryptedData, 0, encryptedData.Length);
-                    cryptoStream.FlushFinalBlock();
-                    return memoryStream.ToArray();
-                }
-                catch (CryptographicException ex)
-                {
-                    Console.WriteLine($"Decryption failed: {ex.Message}");
-                    throw;
-                }
+                Console.WriteLine("R " + memoryStream.ToArray().ToString());
+                cryptoStream.Write(encryptedData, 0, encryptedData.Length);
+                cryptoStream.FlushFinalBlock();
+                return memoryStream.ToArray();
+            }
+            catch (CryptographicException ex)
+            {
+                Console.WriteLine($"Decryption failed: {ex.Message}");
+                throw;
             }
         }
     }
