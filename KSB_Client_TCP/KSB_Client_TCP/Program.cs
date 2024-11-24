@@ -45,29 +45,9 @@ namespace KSB_Client_TCP
                         byte[] encryptedSegment = aes.EncryptData(packets[i]);
 
                         // 암호화된 패킷 전송
-                        // 4080 바이트를 암호화 하면 16바이트의 패딩이 붙어서 일단 임시로
-                        // 암호화 전 크기만큼 보내는 것으로 했음...
                         host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
                         Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
                     }
-
-                    // 3. 파일 분할 및 암호화 후 전송
-                    /*int packetSize = 4096; // 패킷 크기
-                    int totalPackets = (binary.Length + packetSize - 1) / packetSize; // 총 패킷 개수
-                    for (int i = 0; i < totalPackets; i++)
-                    {
-                        int offset = i * packetSize;
-                        int size = Math.Min(packetSize, binary.Length - offset);
-                        byte[] segment = new byte[size];
-                        Array.Copy(binary, offset, segment, 0, size);
-
-                        // 패킷마다 암호화 수행
-                        byte[] encryptedSegment = aes.EncryptData(segment);
-
-                        // 암호화된 패킷 전송
-                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
-                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{totalPackets})");
-                    }*/
                 }
             }
 
