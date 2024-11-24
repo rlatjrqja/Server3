@@ -22,6 +22,22 @@ namespace Protocols
 
     public class Protocol1_File
     {
+        public static byte[] FileToBinary(string root, string name)
+        {
+            string filename = root + name;
+            string fullPath = Path.GetFullPath(filename);
+            var file = new FileInfo(fullPath);
+            byte[] binary = new byte[file.Length]; // 바이너리 버퍼
+
+            if (file.Exists)
+            {
+                var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+                stream.Read(binary, 0, binary.Length);
+            }
+
+            return binary;
+        }
+
         public static Byte[] TransmitFileRequest(int name_legth, string name, int file_size)
         {
             List<byte> request = new List<byte>();

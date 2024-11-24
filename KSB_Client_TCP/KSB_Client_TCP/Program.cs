@@ -11,7 +11,6 @@ namespace KSB_Client_TCP
         static void Main(string[] args)
         {
             string ip = "172.18.27.199";
-            //string ip = "192.168.45.232";
             int port = 50001;
             string rootDir = @"..\..\..\..\..\SendingFile";
             string name = @"\Dummy.xlsx";
@@ -26,14 +25,11 @@ namespace KSB_Client_TCP
             {
                 // 1. 파일 바이너리 변환
                 byte[] binary = FileToBinary(rootDir, name);
+                Console.WriteLine($"파일 크기: {binary.Length} 바이트");
 
-                // 2. 데이터 암호화
+                // 2. 파일 전송 요청
                 AES aes = new AES(); // 암호화 클래스 인스턴스 생성
-                byte[] encryptedBinary = aes.EncryptData(binary);
-                Console.WriteLine($"파일 암호화 완료, 크기: {encryptedBinary.Length} 바이트");
-
-                // 3. 파일 전송 요청
-                byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, encryptedBinary.Length);
+                byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
                 byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
                 host.Send(data);
                 Console.WriteLine("파일 전송 가능 상태 확인");
@@ -41,16 +37,27 @@ namespace KSB_Client_TCP
                 Header response_file = WaitForServerResponse(host);
                 if (CheckOPCODE(response_file, 100, "파일 전송 가능", "파일 전송 불가"))
                 {
-                    // 4. 암호화된 파일 전송
-                    List<byte[]> packets = Protocol1_File.TransmitFile(encryptedBinary);
-                    for (int i = 0; i < packets.Count; i++)
+                    // 3. 파일 분할 및 암호화 후 전송
+                    int packetSize = 4096; // 패킷 크기
+                    int totalPackets = (binary.Length + packetSize - 1) / packetSize; // 총 패킷 개수
+                    for (int i = 0; i < totalPackets; i++)
                     {
-                        host.Send(Header.MakePacket(0, 200, i, packets[i].Length, 0, packets[i]));
-                        Console.WriteLine($"[Send] {packets[i].Length} Byte");
+                        int offset = i * packetSize;
+                        int size = Math.Min(packetSize, binary.Length - offset);
+                        byte[] segment = new byte[size];
+                        Array.Copy(binary, offset, segment, 0, size);
+
+                        // 패킷마다 암호화 수행
+                        byte[] encryptedSegment = aes.EncryptData(segment);
+
+                        // 암호화된 패킷 전송
+                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
+                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{totalPackets})");
                     }
                 }
             }
         }
+
 
 
         private static Socket ConnectTo(string ip, int port)

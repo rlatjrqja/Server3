@@ -15,6 +15,7 @@ namespace Protocols
         public const int FILE_REQUEST = 100;
         public const int SENDING = 200;
         public const int SENDLAST = 210;
+        public const int CHECK_PACKET = 300;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Protocols;
+using SHA;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,20 @@ using System.Threading.Tasks;
 
 namespace ServerSocket
 {
+    class StateMachine
+    {
+        public enum State { Waiting, Listening, Recieving }
+        public State state { get; private set; }
+
+        public StateMachine() { state = State.Waiting; }
+        public State GetState() { return state; }
+        public void SetState(State state) {  this.state = state; }
+    }
+
     public class ClientHandle
     {
         public Socket host;
+        StateMachine SM = new StateMachine(); /// 일단 구색은 갖췄는데 지금은 사용 안함
         List<Protocol1_File_Log> log_protocol1 = new List<Protocol1_File_Log>();
 
         public ClientHandle(Socket client)
@@ -19,9 +31,10 @@ namespace ServerSocket
 
             Task.Run(() =>
             {
+                SM.SetState(StateMachine.State.Listening);
                 while (true)
                 {
-                    /// 받은 데이터를 헤더(13바이트), 내용물로 분리
+                    /// 받은 데이터를 헤더(16바이트)와 내용물로 분리. 내용물에도 정보는 들어있음
                     byte[] packet = StartListening();
                     Header header = new Header();
                     header.MakeHeader(packet);
@@ -36,6 +49,14 @@ namespace ServerSocket
                             break;
                         case Const.SENDING:
                             FileReceied(header); /// 파일 보내는 중
+                            break;
+                        case Const.SENDLAST:
+                            // FileReceied(header);
+                            // 방법1. 클라에서 서버로 파일 잘 갔는지 확인
+                            // 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청
+                            break;
+                        case Const.CHECK_PACKET:
+                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
                             break;
                     }
                 }
@@ -126,5 +147,19 @@ namespace ServerSocket
             }
         }
 
+        private void CheckIntegrity(Header header)
+        {
+            byte[] encryptedStream = header.BODY;
+            AES aes = new AES();
+            byte[] decryptedStream = aes.DecryptData(encryptedStream);
+
+            Protocol1_File_Log pf = log_protocol1.Last();
+            int fileName_length = pf.name_legth;
+            string fileName = pf.name;
+            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
+
+            byte[] binary = Protocol1_File.FileToBinary(filePath, fileName);
+            //MySHA256.CompareHashes(binary)
+        }
     }
 }

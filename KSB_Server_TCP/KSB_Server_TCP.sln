@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSocket", "ServerSocke
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Protocols.csproj", "{F08B1688-2C34-48F7-9183-41DD1D056CC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Encryption", "..\Encryption\Encryption.csproj", "{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Encryption\Encryption.csproj", "{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SHA", "..\SHA\SHA.csproj", "{D030F3A6-90E3-4163-B582-0F95633D0A3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
