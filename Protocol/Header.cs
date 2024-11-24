@@ -30,6 +30,11 @@ namespace Protocols
         public ushort CRC { get; private set; }
         public Byte[] BODY { get; private set; }
 
+        public int GetHeaderSize()
+        {
+            return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + 3;
+        }
+
         public int MakeHeader(byte[] packet)
         {
             // 1바이트 복사
@@ -48,7 +53,8 @@ namespace Protocols
             CRC = BitConverter.ToUInt16(packet, 11);
 
             BODY = new Byte[LENGTH];
-            Array.Copy(packet, 16, BODY, 0, LENGTH);
+
+            Array.Copy(packet, GetHeaderSize(), BODY, 0, LENGTH);
 
             return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + (int)LENGTH;
         }
@@ -61,7 +67,16 @@ namespace Protocols
             packet.AddRange(BitConverter.GetBytes((uint)seq));
             packet.AddRange(BitConverter.GetBytes((uint)len));
             packet.AddRange(BitConverter.GetBytes((ushort)crc));
-            packet.AddRange(new Byte[3] { 0x00,0x00,0x00 }); /// 헤더를 16 바이트로 만들기 위한 발버둥
+
+            /// 헤더를 20 바이트로 만들기 위한 발버둥
+            /// 암호화를 고려해 body 크기를 4080 으로 맞추기 위함
+            int count = packet.Count%16;
+            while(count != 0 && count != 16)
+            {
+                packet.Add(0x00);
+                count++;
+            }
+            //packet.AddRange(new Byte[7] { 0x00,0x00,0x00, 0x00, 0x00, 0x00, 0x00 }); 
             packet.AddRange(data);
 
             return packet.ToArray();

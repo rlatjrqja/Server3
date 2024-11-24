@@ -73,7 +73,7 @@ namespace Protocols
         {
             List<Byte[]> packets = new List<Byte[]>();
             int headerSize = 16;
-            int maxDataSize = 4096 - headerSize;
+            int maxDataSize = 4096 - headerSize - 1; // 암호화 버퍼 1
             int totalPackets = (int)Math.Ceiling((double)binary.Length / maxDataSize);
 
             for (int seq = 0; seq < totalPackets; seq++)

@@ -26,7 +26,7 @@ public class AES
             cryptoStream.Write(data, 0, data.Length);
             cryptoStream.FlushFinalBlock();
 
-            Console.WriteLine("S " + memoryStream.ToArray().ToString());
+            //Console.WriteLine("S " + memoryStream.ToArray().ToString());
             return memoryStream.ToArray();
         }
     }
@@ -48,7 +48,7 @@ public class AES
             using CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
             try
             {
-                Console.WriteLine("R " + memoryStream.ToArray().ToString());
+                //Console.WriteLine("R " + memoryStream.ToArray().ToString());
                 cryptoStream.Write(encryptedData, 0, encryptedData.Length);
                 cryptoStream.FlushFinalBlock();
                 return memoryStream.ToArray();

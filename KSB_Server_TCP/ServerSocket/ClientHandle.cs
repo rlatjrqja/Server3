@@ -1,5 +1,5 @@
 ﻿using Protocols;
-using SHA;
+using Integrity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -127,9 +127,10 @@ namespace ServerSocket
             Protocol1_File_Log pf = log_protocol1.Last();
             int fileName_length = pf.name_legth;
             string fileName = pf.name;
-            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
+            string filePath = @"..\..\..\..\..\ReceivedFile" +  fileName;
+            string fullPath = Path.GetFullPath(filePath);
 
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (FileStream fs = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 int bytesToRead = (int)Math.Min(decryptedStream.Length, header.LENGTH);
 

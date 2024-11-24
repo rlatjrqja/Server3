@@ -10,7 +10,9 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            string ip = "172.18.27.199";
+            string ip = "192.168.45.232";
+            //string ip = "172.18.27.199";
+
             int port = 50001;
             string rootDir = @"..\..\..\..\..\SendingFile";
             string name = @"\Dummy.xlsx";
@@ -37,8 +39,20 @@ namespace KSB_Client_TCP
                 Header response_file = WaitForServerResponse(host);
                 if (CheckOPCODE(response_file, 100, "파일 전송 가능", "파일 전송 불가"))
                 {
+                    List<byte[]> packets = Protocol1_File.TransmitFile(binary);
+                    for (int i = 0; i < packets.Count; i++)
+                    {
+                        byte[] encryptedSegment = aes.EncryptData(packets[i]);
+
+                        // 암호화된 패킷 전송
+                        // 4080 바이트를 암호화 하면 16바이트의 패딩이 붙어서 일단 임시로
+                        // 암호화 전 크기만큼 보내는 것으로 했음...
+                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
+                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                    }
+
                     // 3. 파일 분할 및 암호화 후 전송
-                    int packetSize = 4096; // 패킷 크기
+                    /*int packetSize = 4096; // 패킷 크기
                     int totalPackets = (binary.Length + packetSize - 1) / packetSize; // 총 패킷 개수
                     for (int i = 0; i < totalPackets; i++)
                     {
@@ -53,8 +67,13 @@ namespace KSB_Client_TCP
                         // 암호화된 패킷 전송
                         host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
                         Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{totalPackets})");
-                    }
+                    }*/
                 }
+            }
+
+            while (true)
+            {
+
             }
         }
 
