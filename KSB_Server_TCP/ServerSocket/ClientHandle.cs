@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ServerSocket
 {
@@ -51,12 +52,13 @@ namespace ServerSocket
                             FileReceied(header); /// 파일 보내는 중
                             break;
                         case Const.SENDLAST:
-                            // FileReceied(header);
+                             FileReceied(header);
                             // 방법1. 클라에서 서버로 파일 잘 갔는지 확인
                             // 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청
+                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
                             break;
                         case Const.CHECK_PACKET:
-                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            //CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
                             break;
                     }
                 }
@@ -159,7 +161,19 @@ namespace ServerSocket
             string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
 
             byte[] binary = Protocol1_File.FileToBinary(filePath, fileName);
-            //MySHA256.CompareHashes(binary)
+            bool isFullRecv = MySHA256.CompareHashes(binary, decryptedStream);
+            if(isFullRecv) // 파일 전송 전 후의 해시가 같음 (정상전송)
+            {
+                byte[] result = Encoding.UTF8.GetBytes("File upload success");
+                byte[] data = Header.MakePacket(0, 300, 0, result.Length, 0, result);
+                host.Send(data);
+            }
+            else // 해시가 다름. 재전송 요청
+            {
+                byte[] result = Encoding.UTF8.GetBytes("File upload fail");
+                byte[] data = Header.MakePacket(0, 301, 0, result.Length, 0, result);
+                host.Send(data);
+            }
         }
     }
 }
