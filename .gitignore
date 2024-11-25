@@ -34,6 +34,10 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+KSB_Server_TCP/files/*
+KSB_Client_TCP/files/*
+!KSB_Server_TCP/files/
+!KSB_Client_TCP/files/
 
 # Visual Studio 2015/2017 cache/options directory
 /.vs
