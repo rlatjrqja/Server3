@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Encryption\Encryption.csproj" />
+    <ProjectReference Include="..\..\Integrity\Integrity.csproj" />
     <ProjectReference Include="..\..\Protocol\Protocols.csproj" />
     <ProjectReference Include="..\..\SHA\SHA.csproj" />
   </ItemGroup>

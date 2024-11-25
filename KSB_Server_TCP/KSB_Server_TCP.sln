@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Encryption\Encryption.csproj", "{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SHA", "..\SHA\SHA.csproj", "{D030F3A6-90E3-4163-B582-0F95633D0A3B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrity", "..\Integrity\Integrity.csproj", "{81A4ADE8-A92E-4436-8BF1-2F513FD331BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA02A6D1-DCA1-4654-BE01-EEFC09FF1B1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D030F3A6-90E3-4163-B582-0F95633D0A3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81A4ADE8-A92E-4436-8BF1-2F513FD331BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81A4ADE8-A92E-4436-8BF1-2F513FD331BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81A4ADE8-A92E-4436-8BF1-2F513FD331BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81A4ADE8-A92E-4436-8BF1-2F513FD331BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

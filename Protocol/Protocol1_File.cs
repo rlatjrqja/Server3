@@ -73,30 +73,20 @@ namespace Protocols
         {
             List<Byte[]> packets = new List<Byte[]>();
             int headerSize = 16;
-            int maxDataSize = 4096 - headerSize;
+            int maxDataSize = 4096 - headerSize - 1; // 암호화 버퍼 1
             int totalPackets = (int)Math.Ceiling((double)binary.Length / maxDataSize);
 
             for (int seq = 0; seq < totalPackets; seq++)
             {
                 int dataStartIndex = seq * maxDataSize;
                 int dataLength = Math.Min(maxDataSize, binary.Length - dataStartIndex);
-                //byte[] packet = new byte[headerSize + dataLength];
 
                 // 실제 데이터 배열을 생성
                 if (dataLength < 2000)
                     Console.Write("Debug");
                 byte[] dataChunk = new byte[dataLength];
                 Array.Copy(binary, dataStartIndex, dataChunk, 0, dataLength);
-
-                // 헤더 생성 (SEQ_NO 등 필요한 정보 포함)
-                    //if (seq != totalPackets - 1) MakeHeader(0, 200, seq, headerSize + dataLength, 0);
-                    //else MakeHeader(0, 210, seq, headerSize + dataLength, 0); // 마지막 패킷
-
-                // 패킷 생성: 헤더와 데이터 병합
-                //Array.Copy(PacketToByte(), 0, packet, 0, headerSize); // 헤더 복사
-                //Array.Copy(dataChunk, 0, packet, headerSize, dataLength); // 데이터 복사
-                //Array.Copy(PacketToByte(), packet, packet.Length);
-
+                
                 packets.Add(dataChunk);
             }
 

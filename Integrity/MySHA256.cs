@@ -1,12 +1,13 @@
 ﻿using System.Security.Cryptography;
 
-namespace SHA
+namespace Integrity
 {
     public class MySHA256
     {
         public static byte[] CreateHash(byte[] data)
         {
             byte[] bytes = new byte[data.Length];
+
 
             SHA256 sha256 = SHA256.Create();
             bytes = sha256.ComputeHash(data);
