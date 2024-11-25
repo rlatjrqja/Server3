@@ -110,12 +110,15 @@ namespace KSB_Client_TCP
                 }
             }
 
+            Header response_end = WaitForServerResponse(host);
+            if (!CheckOPCODE(response_end, 300, "마지막 패킷 수신", "수신 중 이상 발생")) return;
+
             byte[] hash = MySHA256.CreateHash(binary);
             byte[] integrity = Header.MakePacket(0, 300, 0, hash.Length, 0, hash);
             host.Send(integrity);
 
-            Header response_end = WaitForServerResponse(host);
-            if (CheckOPCODE(response_end, 300, "파일 전송 완료", "파일 전송 실패"))
+            Header response_ok = WaitForServerResponse(host);
+            if (CheckOPCODE(response_ok, 300, "파일 전송 완료", "파일 전송 실패"))
             {
                 Console.WriteLine("END");
             }

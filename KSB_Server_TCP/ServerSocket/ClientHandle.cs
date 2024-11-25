@@ -56,6 +56,7 @@ namespace ServerSocket
                             // 방법1. 클라에서 서버로 파일 잘 갔는지 확인
                             // 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청
                             // CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            FileIntegritySend();
                             break;
                         case Const.CHECK_PACKET:
                             CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
@@ -152,6 +153,12 @@ namespace ServerSocket
 
                 if(header.OPCODE == 210) fs.Close();
             }
+        }
+
+        private void FileIntegritySend()
+        {
+            byte[] data = Header.MakePacket(0, 300, 0, 1, 0, new byte[1]);
+            host.Send(data);
         }
 
         private void CheckIntegrity(Header header)
