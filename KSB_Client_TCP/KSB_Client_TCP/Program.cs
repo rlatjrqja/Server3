@@ -49,6 +49,11 @@ namespace KSB_Client_TCP
                         Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
                     }
                 }
+
+                if (CheckOPCODE(response_file, 300, "파일 전송 완료", "파일 전송 실패"))
+                {
+
+                }
             }
 
             while (true)
