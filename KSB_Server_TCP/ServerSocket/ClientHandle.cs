@@ -52,13 +52,15 @@ namespace ServerSocket
                             FileReceied(header); /// 파일 보내는 중
                             break;
                         case Const.SENDLAST:
-                             FileReceied(header);
+                            FileReceied(header); /// 파일 받기 끝
                             // 방법1. 클라에서 서버로 파일 잘 갔는지 확인
                             // 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청
-                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            // CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
                             break;
                         case Const.CHECK_PACKET:
-                            //CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -147,22 +149,27 @@ namespace ServerSocket
                 // Append decrypted data to the file
                 fs.Position = fs.Length;
                 fs.Write(decryptedStream, 0, bytesToRead);
+
+                if(header.OPCODE == 210) fs.Close();
             }
         }
 
         private void CheckIntegrity(Header header)
         {
-            byte[] encryptedStream = header.BODY;
+            /// 해시도 암호화를 해야할까?
+            /*byte[] encryptedStream = header.BODY;
             AES aes = new AES();
-            byte[] decryptedStream = aes.DecryptData(encryptedStream);
+            byte[] decryptedStream = aes.DecryptData(encryptedStream);*/
 
             Protocol1_File_Log pf = log_protocol1.Last();
             int fileName_length = pf.name_legth;
             string fileName = pf.name;
-            string filePath = Path.Combine(@"..\..\..\..\..\ReceivedFile", fileName);
+            string filePath = @"..\..\..\..\..\ReceivedFile";
 
             byte[] binary = Protocol1_File.FileToBinary(filePath, fileName);
-            bool isFullRecv = MySHA256.CompareHashes(binary, decryptedStream);
+            byte[] hash = MySHA256.CreateHash(binary);
+            bool isFullRecv = MySHA256.CompareHashes(hash, header.BODY);
+
             if(isFullRecv) // 파일 전송 전 후의 해시가 같음 (정상전송)
             {
                 byte[] result = Encoding.UTF8.GetBytes("File upload success");

@@ -1,0 +1,65 @@
+FTP   파일 전송 프로토콜
+
+심플 파일 전송 프로토콜 제작과 실습
+============================================================
+      파일 전송하는 것  ( 1K 미만의 메세지 확장판)
+	  1G~4GB 파일을 보낼때 고려사항
+	  
+	  TCP/UDP Ethernet Data구간 사이즈
+		1500 (ip/tcp헤더포함)
+		1460  헤더 제외
+		1460 쪼개기 fragment --> 너무 저수준이다
+		     어차피 tcp는 스트림형태로 전송된다.
+	  
+	  파일을 읽는 곳에서 분할된 사이즈 
+		클러스터 4k 8k  516   ==> buffer size
+		파일을 한번에 메모리에 올려서 보낼까?
+		파일을 적당한 크기씩 읽어서 보낼까?
+	  
+	  Fragments 1G를 4K로 쪼개진 번호 0~250,000 => 4Bytes
+	  
+	  데이터가 문제가 있는지 확인하는 용도	  
+	  CHKSUM     8bits
+	  CRC-16    16bits                                 => 2Bytes
+	  CRC-32    32bits    
+	  
+	  데이터길이   4G까지 가능                      => 4Byte  
+	  
+	  확장 가능성                        => 여유바이트 Reserved
+	                                         => 프로토콜 버전 v1.0 (선택)
+	  프로토콜 버전을 포기하는  => 1Byte
+	  
+
+
+
+============================================================
+	파일 전송하기 위한 절차
+		접속 후 전송 >> 서버에서 받을수 있는지      
+		         >> 보낼수 있는지 (상태)
+		접속 TCP - connect 
+		
+		전송 요청 
+		protocol - Start request
+		protocol - Start response (OK, REJECT)
+			REJECT -> disconnect				001
+			OK ->   						000
+		protocol - Trans-Level-0 request
+			Body(데이터 구간)
+			filename(확장자 포함) < 100수준으로
+			filesize (Bytes 단위) 
+		protocol - TL-0 response
+		    REJECT -> 파일명이 너무 길다. 101
+			          파일크기 너무 크다. 102
+			OK->						100
+		protocol - Trans-Level-1 (Send)
+			쪼개서 보낸다
+			분할 순서 시작   지점				200 
+					 끝나는 지점			210
+		protocol - TL-1 response
+		    정상으로 모두 도작
+			Error  			접속 종료    		301
+			Success		    접속 종료			300
+		protocol Trans-Level-2 final request
+			disconnection					400
+		protocol TL-2	final response
+			OK						500

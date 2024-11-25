@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Encryption\Encryption.csproj", "{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrity", "..\Integrity\Integrity.csproj", "{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

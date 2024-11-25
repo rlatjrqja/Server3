@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using Protocols;
 using Encryption;
+using Integrity;
 
 namespace KSB_Client_TCP
 {
@@ -10,8 +11,8 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            //string ip = "192.168.45.232"; // 고정 IP
-            string ip = "127.0.0.1"; // 고정 IP
+            string ip = "192.168.45.232"; // 고정 IP
+            //string ip = "127.0.0.1"; // 고정 IP
             int port = 50001;            // 고정 포트 번호
             string rootDir = @"..\..\..\..\..\SendingFile";
             string name = @"\Dummy.xlsx";
@@ -94,19 +95,33 @@ namespace KSB_Client_TCP
                 {
                     byte[] encryptedSegment = aes.EncryptData(packets[i]);
 
-                    // 암호화된 패킷 전송
-                    host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
-                    Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                    if(packets[i] != packets.Last())
+                    {
+                        // 암호화된 패킷 전송
+                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
+                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                    }
+                    else
+                    {
+                        // 암호화된 패킷 전송
+                        host.Send(Header.MakePacket(0, 210, i, encryptedSegment.Length, 0, encryptedSegment));
+                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                    }
                 }
             }
 
-            if (CheckOPCODE(response_file, 300, "파일 전송 완료", "파일 전송 실패"))
+            byte[] hash = MySHA256.CreateHash(binary);
+            byte[] integrity = Header.MakePacket(0, 300, 0, hash.Length, 0, hash);
+            host.Send(integrity);
+
+            Header response_end = WaitForServerResponse(host);
+            if (CheckOPCODE(response_end, 300, "파일 전송 완료", "파일 전송 실패"))
             {
-                Console.WriteLine("파일 전송을 성공적으로 완료했습니다.");
+                Console.WriteLine("END");
             }
             else
             {
-                Console.WriteLine("파일 전송 중 오류가 발생했습니다.");
+                Console.WriteLine("여기에 재전송 구현");
             }
         }
 
