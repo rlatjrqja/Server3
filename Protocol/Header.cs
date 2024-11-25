@@ -35,7 +35,7 @@ namespace Protocols
             return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + 3;
         }
 
-        public int MakeHeader(byte[] packet)
+        public int DisassemblePacket(byte[] packet)
         {
             // 1바이트 복사
             proto_VER = packet[0];
@@ -59,7 +59,7 @@ namespace Protocols
             return sizeof(Byte) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(ushort) + (int)LENGTH;
         }
 
-        public static byte[] MakePacket(int ver, int op, int seq, int len, int crc, byte[] data)
+        public static byte[] AssemblePacket(int ver, int op, int seq, int len, int crc, byte[] data)
         {
             List<byte> packet = new List<byte>();
             packet.Add((Byte)ver);

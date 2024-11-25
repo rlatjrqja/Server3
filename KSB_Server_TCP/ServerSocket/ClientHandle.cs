@@ -20,11 +20,18 @@ namespace ServerSocket
         public void SetState(State state) {  this.state = state; }
     }
 
+    /// <summary>
+    /// 서버 -> 클라이언트로 요청을 보내지 않음.
+    /// 서버의 기본적인 의의는 받은 요청에 대해 응답하는 것으로 설계하였음.
+    /// </summary>
     public class ClientHandle
     {
         public Socket host;
-        StateMachine SM = new StateMachine(); /// 일단 구색은 갖췄는데 지금은 사용 안함
-        List<Protocol1_File_Log> log_protocol1 = new List<Protocol1_File_Log>();
+
+        List<Protocol1_File_Log> log_protocol1 = new();
+        string server_dir = @"..\..\..\..\..\KSB_Server_TCP\files"; //ReceivedFile
+
+        StateMachine SM = new(); /// 일단 구색은 갖췄는데 아직은 사용 안함
 
         public ClientHandle(Socket client)
         {
@@ -35,31 +42,35 @@ namespace ServerSocket
                 SM.SetState(StateMachine.State.Listening);
                 while (true)
                 {
-                    /// 받은 데이터를 헤더(16바이트)와 내용물로 분리. 내용물에도 정보는 들어있음
+                    /// 받은 데이터를 분리. 패킷 정보를 담은 헤더와 정보 및 실제 데이터를 담은 바디로 구성
                     byte[] packet = StartListening();
-                    Header header = new Header();
-                    header.MakeHeader(packet);
+                    Header header = new();
+                    header.DisassemblePacket(packet);
 
                     switch (header.OPCODE)
                     {
                         case Const.CONNECT_REQUEST:
-                            ConnectionRequestRecv(); /// 접속 요청
+                            /// 접속 요청 받음
+                            ConnectionRequest(); 
                             break;
                         case Const.FILE_REQUEST:
-                            FileUploadRequestRecv(header); /// 파일 좀 받아줘 (업로드)
+                            /// 파일 업로드 요청 받음
+                            FileUploadRequest(header); 
                             break;
                         case Const.SENDING:
-                            FileReceied(header); /// 파일 보내는 중
+                            /// 파일 받는 중
+                            FileReceive(header); 
                             break;
                         case Const.SENDLAST:
-                            FileReceied(header); /// 파일 받기 끝
-                            // 방법1. 클라에서 서버로 파일 잘 갔는지 확인
-                            // 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청
-                            // CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
-                            FileIntegritySend();
+                            /// 파일 받기 끝
+                            FileReceive(header);
+                            FileReceiveEnd();
                             break;
                         case Const.CHECK_PACKET:
-                            CheckIntegrity(header); /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            /// 방법1. 클라에서 서버로 파일 잘 갔는지 확인
+                            /// 방법2. 서버에서 클라로 원본 파일 이거 맞는지 요청 -> 현재 사용 중인 방법
+                            /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
+                            CheckIntegrity(header);
                             break;
                         default:
                             break;
@@ -79,31 +90,32 @@ namespace ServerSocket
             return lawData;
         }
 
-        void ConnectionRequestRecv()
+        void ConnectionRequest()
         {
             /// 이미 접속한 유저면 접속 요청 무시
             foreach (var handle in RootServer.instance.users)
             {
                 if (handle == this)
                 {
-                    byte[] body = Encoding.UTF8.GetBytes("001 reject");
-                    byte[] data = Header.MakePacket(0, 001, 0, body.Length, 0, body);
+                    byte[] response = Encoding.UTF8.GetBytes("001 reject");
+                    byte[] data = Header.AssemblePacket(0, 001, 0, response.Length, 0, response);
                     host.Send(data);
                     return;
                 }
             }
 
+            /// 신규 접속
             {
                 RootServer.instance.users.Add(this);
-                byte[] body = Encoding.UTF8.GetBytes("000 OK");
-                byte[] data = Header.MakePacket(0, 000, 0, body.Length, 0, body);
+                byte[] response = Encoding.UTF8.GetBytes("000 OK");
+                byte[] data = Header.AssemblePacket(0, 000, 0, response.Length, 0, response);
                 host.Send(data);
             }
         }
 
-        void FileUploadRequestRecv(Header header)
+        void FileUploadRequest(Header header)
         {
-            /// 파일 내용물에도 헤더가 있음, 이름 및 크기
+            /// 파일 내용물에도 헤더가 있음, 이름길이 - 이름 - 파일크기 순
             byte[] stream = header.BODY;
             int fileName_length = BitConverter.ToInt32(stream, 0);
             string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
@@ -111,33 +123,31 @@ namespace ServerSocket
 
             /// 파일 이름과 크기가 적절한지
             byte[] response = Protocol1_File.TransmitFileResponse(fileName, fileSize);
-
-            /// 
-            byte[] data = Header.MakePacket(header.proto_VER, header.OPCODE, 0, response.Length, 0, response);
-
+            byte[] data = Header.AssemblePacket(header.proto_VER, header.OPCODE, 0, response.Length, 0, response);
             host.Send(data);
 
-            // 임시
+            /// 받은 요청은 로그에 추가
             log_protocol1.Add(new Protocol1_File_Log(fileSize, fileName, fileName_length));
         }
 
-        void FileReceied(Header header)
+        void FileReceive(Header header)
         {
-            byte[] encryptedStream = header.BODY; // 암호화된 데이터
+            /// 받은 파일 바이너리 (암호화 전)
+            byte[] encryptedData = header.BODY;
 
-            // AES 복호화: 클라이언트에서 사용한 Key와 IV를 서버에서 동일하게 설정해야 함
+            /// AES 복호화. 라이브러리에 고정값 사용중 (보안성 낮음)
             AES aes = new AES();
-            byte[] decryptedStream = aes.DecryptData(encryptedStream);
+            byte[] decryptedData = aes.DecryptData(encryptedData);
 
+            /// 경로 탐색
             Protocol1_File_Log pf = log_protocol1.Last();
-            int fileName_length = pf.name_legth;
             string fileName = pf.name;
-            string filePath = @"..\..\..\..\..\ReceivedFile" +  fileName;
+            string filePath = server_dir + fileName;
             string fullPath = Path.GetFullPath(filePath);
 
             using (FileStream fs = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
             {
-                int bytesToRead = (int)Math.Min(decryptedStream.Length, header.LENGTH);
+                int bytesToRead = (int)Math.Min(decryptedData.Length, header.LENGTH);
 
                 Console.WriteLine($"[Receive] ({header.SEQ_NO})\tHeader:{16}Byte + Body:{bytesToRead}Byte");
 
@@ -149,44 +159,51 @@ namespace ServerSocket
 
                 // Append decrypted data to the file
                 fs.Position = fs.Length;
-                fs.Write(decryptedStream, 0, bytesToRead);
+                fs.Write(decryptedData, 0, bytesToRead);
 
                 if(header.OPCODE == 210) fs.Close();
             }
         }
 
-        private void FileIntegritySend()
+        private void FileReceiveEnd()
         {
-            byte[] data = Header.MakePacket(0, 300, 0, 1, 0, new byte[1]);
+            /// CRC 부분 재전송 할거면 여기서 처리
+            /// CRC 1인 패킷들 리스트로 모아서 전송
+
+            byte[] data = Header.AssemblePacket(0, 300, 0, 1, 0, new byte[1]);
             host.Send(data);
         }
 
         private void CheckIntegrity(Header header)
         {
             /// 해시도 암호화를 해야할까?
-            /*byte[] encryptedStream = header.BODY;
+            /*byte[] encryptedData = header.BODY;
             AES aes = new AES();
-            byte[] decryptedStream = aes.DecryptData(encryptedStream);*/
+            byte[] decryptedData = aes.DecryptData(encryptedData);*/
 
+            /// 경로 탐색
             Protocol1_File_Log pf = log_protocol1.Last();
-            int fileName_length = pf.name_legth;
             string fileName = pf.name;
-            string filePath = @"..\..\..\..\..\ReceivedFile";
+            string filePath = server_dir + fileName;
+            string fullPath = Path.GetFullPath(filePath);
 
-            byte[] binary = Protocol1_File.FileToBinary(filePath, fileName);
+            /// 전송 받은 파일 해시값 계산
+            byte[] binary = Protocol1_File.FileToBinary(fullPath);
             byte[] hash = MySHA256.CreateHash(binary);
             bool isFullRecv = MySHA256.CompareHashes(hash, header.BODY);
 
-            if(isFullRecv) // 파일 전송 전 후의 해시가 같음 (정상전송)
+            /// 파일 전송 전 후의 해시가 같음 (정상전송)
+            if (isFullRecv)
             {
                 byte[] result = Encoding.UTF8.GetBytes("File upload success");
-                byte[] data = Header.MakePacket(0, 300, 0, result.Length, 0, result);
+                byte[] data = Header.AssemblePacket(0, 300, 0, result.Length, 0, result);
                 host.Send(data);
             }
-            else // 해시가 다름. 재전송 요청
+            /// 해시가 다름. 재전송 요청
+            else
             {
                 byte[] result = Encoding.UTF8.GetBytes("File upload fail");
-                byte[] data = Header.MakePacket(0, 301, 0, result.Length, 0, result);
+                byte[] data = Header.AssemblePacket(0, 301, 0, result.Length, 0, result);
                 host.Send(data);
             }
         }

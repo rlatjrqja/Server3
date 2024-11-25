@@ -83,7 +83,7 @@ namespace KSB_Client_TCP
             // 파일 전송 요청
             AES aes = new AES();
             byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
-            byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
+            byte[] data = Header.AssemblePacket(0, 100, 0, request.Length, 0, request);
             host.Send(data);
             Console.WriteLine("파일 전송 가능 상태 확인");
 
@@ -98,13 +98,13 @@ namespace KSB_Client_TCP
                     if(packets[i] != packets.Last())
                     {
                         // 암호화된 패킷 전송
-                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
+                        host.Send(Header.AssemblePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
                         Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
                     }
                     else
                     {
                         // 암호화된 패킷 전송
-                        host.Send(Header.MakePacket(0, 210, i, encryptedSegment.Length, 0, encryptedSegment));
+                        host.Send(Header.AssemblePacket(0, 210, i, encryptedSegment.Length, 0, encryptedSegment));
                         Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
                     }
                 }
@@ -114,7 +114,7 @@ namespace KSB_Client_TCP
             if (!CheckOPCODE(response_end, 300, "마지막 패킷 수신", "수신 중 이상 발생")) return;
 
             byte[] hash = MySHA256.CreateHash(binary);
-            byte[] integrity = Header.MakePacket(0, 300, 0, hash.Length, 0, hash);
+            byte[] integrity = Header.AssemblePacket(0, 300, 0, hash.Length, 0, hash);
             host.Send(integrity);
 
             Header response_ok = WaitForServerResponse(host);
@@ -130,7 +130,7 @@ namespace KSB_Client_TCP
 
         static void Disconnect(Socket host)
         {
-            byte[] disconnectPacket = Header.MakePacket(0, 500, 0, 0, 0, new byte[0]);
+            byte[] disconnectPacket = Header.AssemblePacket(0, 500, 0, 0, 0, new byte[0]);
             host.Send(disconnectPacket);
             host.Close();
             Console.WriteLine("서버와의 연결을 종료했습니다.");
@@ -145,7 +145,7 @@ namespace KSB_Client_TCP
             host.Connect(ipep);
 
             byte[] body = Encoding.UTF8.GetBytes("Connection Request");
-            byte[] request = Header.MakePacket(0, 000, 0, body.Length, 0, body);
+            byte[] request = Header.AssemblePacket(0, 000, 0, body.Length, 0, body);
             host.Send(request);
             Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
 
@@ -175,7 +175,7 @@ namespace KSB_Client_TCP
             if (bytesReceived > 0)
             {
                 Header header = new Header();
-                header.MakeHeader(buffer);
+                header.DisassemblePacket(buffer);
                 return header;
             }
             return null;

@@ -6,12 +6,9 @@ namespace Integrity
     {
         public static byte[] CreateHash(byte[] data)
         {
-            byte[] bytes = new byte[data.Length];
-
-
             SHA256 sha256 = SHA256.Create();
+            byte[] bytes = new byte[data.Length];
             bytes = sha256.ComputeHash(data);
-
             return bytes;
         }
 
@@ -20,7 +17,9 @@ namespace Integrity
         {
             if (hash1.Length != hash2.Length)
             {
-                Console.WriteLine($"두 해시의 길이가 다릅니다. HASH1: {hash1.Length}byte, HASH2: {hash2.Length}byte");
+                Console.WriteLine($"두 해시의 길이가 다릅니다. " +
+                    $"HASH1: {hash1.Length}byte, " +
+                    $"HASH2: {hash2.Length}byte");
                 return false;
             }
 

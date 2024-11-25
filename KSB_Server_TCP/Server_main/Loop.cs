@@ -12,7 +12,7 @@ namespace Server_main
             /// Json으로 저장 & 불러오기 해서 유저 테이블 만들기
 
             /// IP 바인드
-            RootServer root = new RootServer("0.0.0.0", 50001);
+            RootServer root = new("0.0.0.0", 50001);
 
             /// 서버 Listen 상태로 전환
             root.StartServer();

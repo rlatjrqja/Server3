@@ -37,6 +37,19 @@ namespace Protocols
 
             return binary;
         }
+        public static byte[] FileToBinary(string fullPath)
+        {
+            var file = new FileInfo(fullPath);
+            byte[] binary = new byte[file.Length]; // 바이너리 버퍼
+
+            if (file.Exists)
+            {
+                var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+                stream.Read(binary, 0, binary.Length);
+            }
+
+            return binary;
+        }
 
         public static Byte[] TransmitFileRequest(int name_legth, string name, int file_size)
         {
@@ -73,23 +86,23 @@ namespace Protocols
         {
             List<Byte[]> packets = new List<Byte[]>();
             int headerSize = 16;
-            int maxDataSize = 4096 - headerSize - 1; // 암호화 버퍼 1
-            int totalPackets = (int)Math.Ceiling((double)binary.Length / maxDataSize);
+            int bodySize = 4096 - headerSize - 1; /// 16의 배수로 맞출경우, 빈 블록이(16byte) 생겨 한 칸 비움
+            int totalPackets = (int)Math.Ceiling((double)binary.Length / bodySize);
 
             for (int seq = 0; seq < totalPackets; seq++)
             {
-                int dataStartIndex = seq * maxDataSize;
-                int dataLength = Math.Min(maxDataSize, binary.Length - dataStartIndex);
+                /// 패킷의 시퀀스에 다른 읽어들이기 offset 조정
+                int dataStartIndex = seq * bodySize;
+                int dataLength = Math.Min(bodySize, binary.Length - dataStartIndex);
 
-                // 실제 데이터 배열을 생성
-                if (dataLength < 2000)
-                    Console.Write("Debug");
+                /// 패킷의 실제 데이터 배열을 생성
                 byte[] dataChunk = new byte[dataLength];
                 Array.Copy(binary, dataStartIndex, dataChunk, 0, dataLength);
                 
                 packets.Add(dataChunk);
             }
 
+            /// 최대 4079 크기의 바이트배열 묶음 반환
             return packets;
         }
     }
