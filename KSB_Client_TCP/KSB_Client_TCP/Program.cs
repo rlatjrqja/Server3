@@ -14,7 +14,7 @@ namespace KSB_Client_TCP
             string ip = "192.168.45.232"; // 고정 IP
             //string ip = "127.0.0.1"; // 고정 IP
             int port = 50001;            // 고정 포트 번호
-            string rootDir = @"..\..\..\..\..\SendingFile";
+            string rootDir = @"..\..\..\..\..\KSB_Client_TCP\files";
             string name = @"\Dummy.xlsx";
 
             // 클라이언트 소켓 생성 및 연결
