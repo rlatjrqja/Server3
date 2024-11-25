@@ -10,56 +10,112 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            string ip = "192.168.45.232";
-            //string ip = "172.18.27.199";
-
-            int port = 50001;
+            //string ip = "192.168.45.232"; // 고정 IP
+            string ip = "127.0.0.1"; // 고정 IP
+            int port = 50001;            // 고정 포트 번호
             string rootDir = @"..\..\..\..\..\SendingFile";
             string name = @"\Dummy.xlsx";
 
-            // 기존 설정 코드
+            // 클라이언트 소켓 생성 및 연결
             Socket host = ConnectTo(ip, port);
 
             Header response_connect = WaitForServerResponse(host);
             if (!CheckOPCODE(response_connect, 000, "서버 접속 성공", "서버 접속 실패")) return;
 
-            // 파일 전송 프로토콜
+            bool running = true;
+
+            while (running)
             {
-                // 1. 파일 바이너리 변환
-                byte[] binary = FileToBinary(rootDir, name);
-                Console.WriteLine($"파일 크기: {binary.Length} 바이트");
+                Console.Clear();
+                Console.WriteLine("==== 클라이언트 메뉴 ====");
+                Console.WriteLine("1. 연결 확인");
+                Console.WriteLine("2. Plane Text 전송");
+                Console.WriteLine("3. 파일 전송");
+                Console.WriteLine("4. 연결 끊기");
+                Console.Write("메뉴를 선택하세요: ");
 
-                // 2. 파일 전송 요청
-                AES aes = new AES(); // 암호화 클래스 인스턴스 생성
-                byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
-                byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
-                host.Send(data);
-                Console.WriteLine("파일 전송 가능 상태 확인");
+                string choice = Console.ReadLine();
 
-                Header response_file = WaitForServerResponse(host);
-                if (CheckOPCODE(response_file, 100, "파일 전송 가능", "파일 전송 불가"))
+                switch (choice)
                 {
-                    List<byte[]> packets = Protocol1_File.TransmitFile(binary);
-                    for (int i = 0; i < packets.Count; i++)
-                    {
-                        byte[] encryptedSegment = aes.EncryptData(packets[i]);
+                    case "1":
+                        // 연결 확인 - 아직 미구현
+                        Console.WriteLine("연결 확인 기능은 아직 구현되지 않았습니다.");
+                        break;
 
-                        // 암호화된 패킷 전송
-                        host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
-                        Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
-                    }
+                    case "2":
+                        // Plane Text 전송 - 아직 미구현
+                        Console.WriteLine("Plane Text 전송 기능은 아직 구현되지 않았습니다.");
+                        break;
+
+                    case "3":
+                        // 파일 전송
+                        Console.WriteLine("파일 전송을 시작합니다...");
+                        FileTransfer(host, rootDir, name);
+                        break;
+
+                    case "4":
+                        // 연결 끊기
+                        Console.WriteLine("서버와 연결을 종료합니다...");
+                        Disconnect(host);
+                        running = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("잘못된 입력입니다. 다시 선택하세요.");
+                        break;
                 }
 
-                if (CheckOPCODE(response_file, 300, "파일 전송 완료", "파일 전송 실패"))
+                if (running)
                 {
+                    Console.WriteLine("\n계속하려면 Enter 키를 누르세요...");
+                    Console.ReadLine();
+                }
+            }
+        }
 
+        static void FileTransfer(Socket host, string rootDir, string name)
+        {
+            byte[] binary = FileToBinary(rootDir, name);
+            Console.WriteLine($"파일 크기: {binary.Length} 바이트");
+
+            // 파일 전송 요청
+            AES aes = new AES();
+            byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
+            byte[] data = Header.MakePacket(0, 100, 0, request.Length, 0, request);
+            host.Send(data);
+            Console.WriteLine("파일 전송 가능 상태 확인");
+
+            Header response_file = WaitForServerResponse(host);
+            if (CheckOPCODE(response_file, 100, "파일 전송 가능", "파일 전송 불가"))
+            {
+                List<byte[]> packets = Protocol1_File.TransmitFile(binary);
+                for (int i = 0; i < packets.Count; i++)
+                {
+                    byte[] encryptedSegment = aes.EncryptData(packets[i]);
+
+                    // 암호화된 패킷 전송
+                    host.Send(Header.MakePacket(0, 200, i, encryptedSegment.Length, 0, encryptedSegment));
+                    Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
                 }
             }
 
-            while (true)
+            if (CheckOPCODE(response_file, 300, "파일 전송 완료", "파일 전송 실패"))
             {
-
+                Console.WriteLine("파일 전송을 성공적으로 완료했습니다.");
             }
+            else
+            {
+                Console.WriteLine("파일 전송 중 오류가 발생했습니다.");
+            }
+        }
+
+        static void Disconnect(Socket host)
+        {
+            byte[] disconnectPacket = Header.MakePacket(0, 500, 0, 0, 0, new byte[0]);
+            host.Send(disconnectPacket);
+            host.Close();
+            Console.WriteLine("서버와의 연결을 종료했습니다.");
         }
 
 
