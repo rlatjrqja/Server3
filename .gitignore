@@ -35,6 +35,10 @@ bld/
 [Ll]ogs/
 SendingFile/*.*
 ReceivedFile/*.*
+KSB_Server_TCP/files/*.xlsx
+KSB_Server_TCP/files/*.txt
+KSB_Client_TCP/files/*.xlsx
+KSB_Client_TCP/files/*.txt
 
 # Visual Studio 2015/2017 cache/options directory
 /.vs
