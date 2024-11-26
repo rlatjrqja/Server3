@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" version="24.9.1">
   <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
-    <mxGraphModel dx="2868" dy="1560" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="819" dy="446" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -245,10 +245,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="pczVk37zEd-j-2-A9qn--3" value="Encryption" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="1040" y="680" width="100" height="290" as="geometry" />
+          <mxGeometry x="1040" y="680" width="100" height="130" as="geometry" />
         </mxCell>
         <mxCell id="pczVk37zEd-j-2-A9qn--4" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="pczVk37zEd-j-2-A9qn--3">
-          <mxGeometry x="45" y="80" width="10" height="200" as="geometry" />
+          <mxGeometry x="45" y="80" width="10" height="40" as="geometry" />
         </mxCell>
         <mxCell id="pczVk37zEd-j-2-A9qn--5" value="&lt;div&gt;&lt;span style=&quot;font-size: 12px; text-wrap-mode: wrap;&quot;&gt;&amp;nbsp; &amp;nbsp; EncryptData()&lt;/span&gt;&lt;/div&gt;" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="BWTJIb0yomok6V5Ke0bs-11" target="pczVk37zEd-j-2-A9qn--4">
           <mxGeometry x="-0.0033" relative="1" as="geometry">
@@ -397,6 +397,9 @@
             <mxPoint x="820" y="1230" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="pczVk37zEd-j-2-A9qn--30" value="여기 OPCODE 변경 해야함" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="640" y="1330" width="170" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
