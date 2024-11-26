@@ -51,7 +51,7 @@ namespace ServerSocket
                     {
                         case Const.CONNECT_REQUEST:
                             /// 접속 요청 받음
-                            ConnectionRequest(); 
+                            ConnectionRequest(header); 
                             break;
                         case Const.FILE_REQUEST:
                             /// 파일 업로드 요청 받음
@@ -90,7 +90,7 @@ namespace ServerSocket
             return lawData;
         }
 
-        void ConnectionRequest()
+        void ConnectionRequest(Header header)
         {
             /// 이미 접속한 유저면 접속 요청 무시
             foreach (var handle in RootServer.instance.users)
@@ -135,8 +135,8 @@ namespace ServerSocket
             /// 받은 파일 바이너리 (암호화 전)
             byte[] encryptedData = header.BODY;
 
-            /// AES 복호화. 라이브러리에 고정값 사용중 (보안성 낮음)
-            AES aes = new AES();
+            /// MyAES 복호화. 라이브러리에 고정값 사용중 (보안성 낮음)
+            MyAES aes = new MyAES();
             byte[] decryptedData = aes.DecryptData(encryptedData);
 
             /// 경로 탐색
@@ -178,7 +178,7 @@ namespace ServerSocket
         {
             /// 해시도 암호화를 해야할까?
             /*byte[] encryptedData = header.BODY;
-            AES aes = new AES();
+            MyAES aes = new MyAES();
             byte[] decryptedData = aes.DecryptData(encryptedData);*/
 
             /// 경로 탐색

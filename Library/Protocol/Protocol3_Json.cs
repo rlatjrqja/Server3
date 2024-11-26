@@ -1,62 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace Protocols
+public class Protocol3_Json
 {
-    public class Protocol3_Json
+    /// <summary>
+    /// Dictionary<string, string> 데이터를 받아 Json으로 변환 후, byte[] 타입으로 반환
+    /// </summary>
+    public static byte[] DictionaryToJson(Dictionary<string, byte[]> jsonDicData, bool pretty = false)
     {
-        public static JsonDocument StringToJson(byte[] data)
-        {
-            // byte[]를 문자열로 변환
-            string jsonString = Encoding.UTF8.GetString(data);
+        // Formatting.Indented 옵션으로 pretty-print 설정
+        Formatting formatting = pretty ? Formatting.Indented : Formatting.None;
 
-            // JSON 문자열을 객체로 역직렬화
-            var jsonObject = JsonSerializer.Deserialize<dynamic>(jsonString);
+        // Dictionary를 JSON 문자열로 변환
+        string jsonString = JsonConvert.SerializeObject(jsonDicData, formatting);
 
+        // 문자열을 byte[]로 변환
+        return Encoding.UTF8.GetBytes(jsonString);
+    }
 
-            return jsonObject;
-        }
+    /// <summary>
+    /// byte[] 타입 데이터를 받아 Json으로 변환하고, 그 Json 객체를 반환
+    /// </summary>
+    public static JObject BytesToJson(byte[] jsonData)
+    {
+        // byte[]를 문자열로 변환
+        string jsonString = Encoding.UTF8.GetString(jsonData);
 
-        public static byte[] JsonToByte(JsonDocument jsonObject)
-        {
-            // JSON 객체를 문자열로 변환
-            string jsonString = JsonSerializer.Serialize(jsonObject);
+        // JSON 문자열을 JObject로 변환
+        return JObject.Parse(jsonString);
+    }
 
-            // 문자열을 byte[]로 변환
-            byte[] byteArray = Encoding.UTF8.GetBytes(jsonString);
+    /// <summary>
+    /// Json 데이터를 받아 지정된 경로에 Json 파일로 저장
+    /// </summary>
+    public static void SaveJsonToFile(JObject jsonObject, string filePath, bool pretty = true)
+    {
+        // Formatting.Indented 옵션으로 pretty-print 설정
+        Formatting formatting = pretty ? Formatting.Indented : Formatting.None;
 
+        // JSON 객체를 문자열로 변환
+        string jsonString = jsonObject.ToString(formatting);
 
-            return byteArray;
-        }
-
-        public class DataDictionary<TKey, TValue>
-        {
-            public TKey Key;
-            public TValue Value;
-        }
-        public class JsonDataArray<TKey, TValue>
-        {
-            public List<DataDictionary<TKey, TValue>> data;
-        }
-        public static string ToJson<TKey, TValue>(Dictionary<TKey, TValue> jsonDicData, bool pretty = false)
-        {
-            List<DataDictionary<TKey, TValue>> dataList = new List<DataDictionary<TKey, TValue>>();
-            DataDictionary<TKey, TValue> dictionaryData;
-            foreach (TKey key in jsonDicData.Keys)
-            {
-                dictionaryData = new DataDictionary<TKey, TValue>();
-                dictionaryData.Key = key;
-                dictionaryData.Value = jsonDicData[key];
-                dataList.Add(dictionaryData);
-            }
-            JsonDataArray<TKey, TValue> arrayJson = new JsonDataArray<TKey, TValue>();
-            arrayJson.data = dataList;
-
-            return JsonUtility.ToJson(arrayJson, pretty);
-        }
+        // 파일에 저장
+        File.WriteAllText(filePath, jsonString, Encoding.UTF8);
     }
 }

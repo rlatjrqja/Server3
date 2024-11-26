@@ -1,15 +1,10 @@
 ﻿using System.Security.Cryptography;
 using System.IO;
 
-public class AES
+public class MyAES
 {
     private readonly byte[] key = Convert.FromBase64String("hOAI8BbC9ULx0ZjlGE0M9nIR8q3IvO+HXShg8opU6Ak=");
     private readonly byte[] iv = Convert.FromBase64String("4hiaOa17fk/1FiIfSwpHKQ==");
-
-    public AES()
-    {
-        
-    }
 
     public byte[] EncryptData(byte[] data)
     {

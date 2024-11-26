@@ -12,22 +12,20 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            //string ip = "192.168.45.232"; // 고정 IP
-            string ip = "172.18.27.199"; // 고정 IP
+            string ip = "192.168.45.232"; // 고정 IP
+            //string ip = "172.18.27.199"; // 고정 IP
             int port = 50001;            // 고정 포트 번호
             string rootDir = @"..\..\..\..\..\KSB_Client_TCP\files";
             string name = @"\Dummy.xlsx";
 
-            Dictionary<string, string> info = UserInfo.CreateID();
             
 
-            // 클라이언트 소켓 생성 및 연결
-            Socket host = ConnectTo(ip, port);
 
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
+            Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            host.Connect(ipep);
 
-            Header response_connect = WaitForServerResponse(host);
-            if (!CheckOPCODE(response_connect, 000, "서버 접속 성공", "서버 접속 실패")) return;
-
+            
             bool running = true;
 
             while (running)
@@ -45,8 +43,13 @@ namespace KSB_Client_TCP
                 switch (choice)
                 {
                     case "1":
-                        // 연결 확인 - 아직 미구현
-                        Console.WriteLine("연결 확인 기능은 아직 구현되지 않았습니다.");
+                        // 클라이언트 소켓 생성 및 연결
+                        Dictionary<string, byte[]> info = UserInfo.CreateID();
+                        byte[] login_data = Protocol3_Json.DictionaryToJson(info);
+                        CreateAccount(host, login_data);
+
+                        Header response_connect = WaitForServerResponse(host);
+                        if (!CheckOPCODE(response_connect, 000, "서버 접속 성공", "서버 접속 실패")) return;
                         break;
 
                     case "2":
@@ -82,11 +85,11 @@ namespace KSB_Client_TCP
 
         static void FileTransfer(Socket host, string rootDir, string name)
         {
-            byte[] binary = FileToBinary(rootDir, name);
+            byte[] binary = Protocol1_File.FileToBinary(rootDir, name);
             Console.WriteLine($"파일 크기: {binary.Length} 바이트");
 
             // 파일 전송 요청
-            AES aes = new AES();
+            MyAES aes = new MyAES();
             byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
             byte[] data = Header.AssemblePacket(0, 100, 0, request.Length, 0, request);
             host.Send(data);
@@ -143,34 +146,14 @@ namespace KSB_Client_TCP
 
 
 
-        private static Socket ConnectTo(string ip, int port, byte[] msg)
+        private static Socket CreateAccount(Socket host, byte[] msg)
         {
-            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
-            Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            host.Connect(ipep);
-
             // byte[] body = Encoding.UTF8.GetBytes("Connection Request"); 로그인 구현으로 비활성
             byte[] request = Header.AssemblePacket(0, 000, 0, msg.Length, 0, msg);
             host.Send(request);
             Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
 
             return host;
-        }
-
-        private static byte[] FileToBinary(string root, string name)
-        {
-            string filename = root + name;
-            string fullPath = Path.GetFullPath(filename);
-            var file = new FileInfo(fullPath);
-            byte[] binary = new byte[file.Length]; // 바이너리 버퍼
-
-            if (file.Exists)
-            {
-                var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
-                stream.Read(binary, 0, binary.Length);
-            }
-
-            return binary;
         }
 
         private static Header WaitForServerResponse(Socket host)

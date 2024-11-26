@@ -1,8 +1,11 @@
-﻿namespace Login
+﻿using System.Buffers.Text;
+using System.Text;
+
+namespace Login
 {
     public class UserInfo
     {
-        public static Dictionary<string, string> CreateID()
+        public static Dictionary<string, byte[]> CreateID()
         {
             string ID = null;
             string Password = null;
@@ -21,9 +24,9 @@
             }
             while (Password == null || Password.Length < 3);
 
-            Dictionary<string, string> info = new();
-            info.Add("ID", ID);
-            info.Add("Password", Password);
+            Dictionary<string, byte[]> info = new();
+            info.Add("ID", Encoding.UTF8.GetBytes(ID));
+            info.Add("Password", Convert.FromBase64String(Password));
 
             return info;
         }

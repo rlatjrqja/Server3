@@ -1,8 +1,10 @@
-﻿
+﻿using System.Security.Cryptography;
+using System.IO;
 
 namespace Encryption
 {
-    internal class RSA
+    public class MyRSA
     {
+
     }
 }
