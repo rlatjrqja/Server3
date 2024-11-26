@@ -32,5 +32,31 @@ namespace Protocols
 
             return byteArray;
         }
+
+        public class DataDictionary<TKey, TValue>
+        {
+            public TKey Key;
+            public TValue Value;
+        }
+        public class JsonDataArray<TKey, TValue>
+        {
+            public List<DataDictionary<TKey, TValue>> data;
+        }
+        public static string ToJson<TKey, TValue>(Dictionary<TKey, TValue> jsonDicData, bool pretty = false)
+        {
+            List<DataDictionary<TKey, TValue>> dataList = new List<DataDictionary<TKey, TValue>>();
+            DataDictionary<TKey, TValue> dictionaryData;
+            foreach (TKey key in jsonDicData.Keys)
+            {
+                dictionaryData = new DataDictionary<TKey, TValue>();
+                dictionaryData.Key = key;
+                dictionaryData.Value = jsonDicData[key];
+                dataList.Add(dictionaryData);
+            }
+            JsonDataArray<TKey, TValue> arrayJson = new JsonDataArray<TKey, TValue>();
+            arrayJson.data = dataList;
+
+            return JsonUtility.ToJson(arrayJson, pretty);
+        }
     }
 }

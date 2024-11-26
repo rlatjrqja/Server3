@@ -4,6 +4,7 @@ using System.Text;
 using Protocols;
 using Encryption;
 using Integrity;
+using Login;
 
 namespace KSB_Client_TCP
 {
@@ -11,14 +12,18 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            string ip = "192.168.45.232"; // 고정 IP
-            //string ip = "127.0.0.1"; // 고정 IP
+            //string ip = "192.168.45.232"; // 고정 IP
+            string ip = "172.18.27.199"; // 고정 IP
             int port = 50001;            // 고정 포트 번호
             string rootDir = @"..\..\..\..\..\KSB_Client_TCP\files";
             string name = @"\Dummy.xlsx";
 
+            Dictionary<string, string> info = UserInfo.CreateID();
+            
+
             // 클라이언트 소켓 생성 및 연결
             Socket host = ConnectTo(ip, port);
+
 
             Header response_connect = WaitForServerResponse(host);
             if (!CheckOPCODE(response_connect, 000, "서버 접속 성공", "서버 접속 실패")) return;
@@ -138,14 +143,14 @@ namespace KSB_Client_TCP
 
 
 
-        private static Socket ConnectTo(string ip, int port)
+        private static Socket ConnectTo(string ip, int port, byte[] msg)
         {
             IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
             Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             host.Connect(ipep);
 
-            byte[] body = Encoding.UTF8.GetBytes("Connection Request");
-            byte[] request = Header.AssemblePacket(0, 000, 0, body.Length, 0, body);
+            // byte[] body = Encoding.UTF8.GetBytes("Connection Request"); 로그인 구현으로 비활성
+            byte[] request = Header.AssemblePacket(0, 000, 0, msg.Length, 0, msg);
             host.Send(request);
             Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
 

@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\Integrity\Integrity.csproj" />
     <ProjectReference Include="..\..\Library\Encryption\Encryption.csproj" />
     <ProjectReference Include="..\..\Library\Integrity\Integrity.csproj" />
+    <ProjectReference Include="..\..\Library\Login\Login.csproj" />
     <ProjectReference Include="..\..\Library\Protocol\Protocols.csproj" />
     <ProjectReference Include="..\..\Protocol\Protocols.csproj" />
   </ItemGroup>
