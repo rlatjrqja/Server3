@@ -5,11 +5,11 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KSB_Client_TCP", "KSB_Client_TCP\KSB_Client_TCP.csproj", "{34AC3A7B-550F-407C-922B-6021A00489D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Protocol\Protocols.csproj", "{83C8A0B7-1DF4-4363-A553-CB6B1025936F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Library\Encryption\Encryption.csproj", "{A4B483E9-C800-4291-9947-B5781FF6952C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encryption", "..\Encryption\Encryption.csproj", "{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrity", "..\Library\Integrity\Integrity.csproj", "{107D3C3B-C1BD-4418-B109-61C9C214FDBD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrity", "..\Integrity\Integrity.csproj", "{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols", "..\Library\Protocol\Protocols.csproj", "{DAFA043E-7253-434F-8964-26296D19452D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,18 +21,18 @@ Global
 		{34AC3A7B-550F-407C-922B-6021A00489D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34AC3A7B-550F-407C-922B-6021A00489D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34AC3A7B-550F-407C-922B-6021A00489D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83C8A0B7-1DF4-4363-A553-CB6B1025936F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC43E4DA-2F87-43D6-9F81-46CF8019FF00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFAE7D2B-4CCD-48F1-9791-BAAA72A6927A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4B483E9-C800-4291-9947-B5781FF6952C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4B483E9-C800-4291-9947-B5781FF6952C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4B483E9-C800-4291-9947-B5781FF6952C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4B483E9-C800-4291-9947-B5781FF6952C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{107D3C3B-C1BD-4418-B109-61C9C214FDBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{107D3C3B-C1BD-4418-B109-61C9C214FDBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{107D3C3B-C1BD-4418-B109-61C9C214FDBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{107D3C3B-C1BD-4418-B109-61C9C214FDBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAFA043E-7253-434F-8964-26296D19452D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAFA043E-7253-434F-8964-26296D19452D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAFA043E-7253-434F-8964-26296D19452D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAFA043E-7253-434F-8964-26296D19452D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
