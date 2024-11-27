@@ -49,7 +49,7 @@ namespace KSB_Client_TCP
                         CreateAccount(host, login_data);
 
                         Header response_connect = WaitForServerResponse(host);
-                        if (!CheckOPCODE(response_connect, 000, "서버 접속 성공", "서버 접속 실패")) return;
+                        if (!CheckOPCODE(response_connect, Const.CONNECT_REQUEST, "서버 접속 성공", "서버 접속 실패")) return;
                         break;
 
                     case "2":
@@ -91,12 +91,12 @@ namespace KSB_Client_TCP
             // 파일 전송 요청
             MyAES aes = new MyAES();
             byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
-            byte[] data = Header.AssemblePacket(0, 100, 0, request.Length, 0, request);
+            byte[] data = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, request.Length, 0, request);
             host.Send(data);
             Console.WriteLine("파일 전송 가능 상태 확인");
 
             Header response_file = WaitForServerResponse(host);
-            if (CheckOPCODE(response_file, 100, "파일 전송 가능", "파일 전송 불가"))
+            if (CheckOPCODE(response_file, Const.CONNECT_REQUEST, "파일 전송 가능", "파일 전송 불가"))
             {
                 List<byte[]> packets = Protocol1_File.TransmitFile(binary);
                 for (int i = 0; i < packets.Count; i++)
@@ -119,14 +119,14 @@ namespace KSB_Client_TCP
             }
 
             Header response_end = WaitForServerResponse(host);
-            if (!CheckOPCODE(response_end, 300, "마지막 패킷 수신", "수신 중 이상 발생")) return;
+            if (!CheckOPCODE(response_end, 210, "마지막 패킷 수신", "수신 중 이상 발생")) return;
 
             byte[] hash = MySHA256.CreateHash(binary);
-            byte[] integrity = Header.AssemblePacket(0, 300, 0, hash.Length, 0, hash);
+            byte[] integrity = Header.AssemblePacket(0, Const.CHECK_PACKET, 0, hash.Length, 0, hash);
             host.Send(integrity);
 
             Header response_ok = WaitForServerResponse(host);
-            if (CheckOPCODE(response_ok, 300, "파일 전송 완료", "파일 전송 실패"))
+            if (CheckOPCODE(response_ok, Const.CHECK_PACKET, "파일 전송 완료", "파일 전송 실패"))
             {
                 Console.WriteLine("END");
             }
@@ -138,7 +138,7 @@ namespace KSB_Client_TCP
 
         static void Disconnect(Socket host)
         {
-            byte[] disconnectPacket = Header.AssemblePacket(0, 500, 0, 0, 0, new byte[0]);
+            byte[] disconnectPacket = Header.AssemblePacket(0, Const.GET_OFF, 0, 0, 0, new byte[0]);
             host.Send(disconnectPacket);
             host.Close();
             Console.WriteLine("서버와의 연결을 종료했습니다.");
@@ -149,7 +149,7 @@ namespace KSB_Client_TCP
         private static Socket CreateAccount(Socket host, byte[] msg)
         {
             // byte[] body = Encoding.UTF8.GetBytes("Connection Request"); 로그인 구현으로 비활성
-            byte[] request = Header.AssemblePacket(0, 000, 0, msg.Length, 0, msg);
+            byte[] request = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, msg.Length, 0, msg);
             host.Send(request);
             Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
 
