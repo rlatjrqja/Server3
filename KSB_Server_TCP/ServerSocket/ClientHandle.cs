@@ -53,6 +53,9 @@ namespace ServerSocket
                             /// 접속 요청 받음
                             ConnectionRequest(header); 
                             break;
+                        case Const.CREATE_ACCOUNT:
+                            CreateAccountRequest(header);
+                            break;
                         case Const.FILE_REQUEST:
                             /// 파일 업로드 요청 받음
                             FileUploadRequest(header); 
@@ -113,6 +116,16 @@ namespace ServerSocket
             }
         }
 
+        void CreateAccountRequest(Header header)
+        {
+            /// 회원 목록 여기에 추가
+            /// 목록에 있는 회원이면
+            
+            byte[] response = Encoding.UTF8.GetBytes("Login success");
+            byte[] data = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, response.Length, 0, response);
+            host.Send(data);
+        }
+
         void FileUploadRequest(Header header)
         {
             /// 파일 내용물에도 헤더가 있음, 이름길이 - 이름 - 파일크기 순
@@ -161,7 +174,7 @@ namespace ServerSocket
                 fs.Position = fs.Length;
                 fs.Write(decryptedData, 0, bytesToRead);
 
-                if(header.OPCODE == 210) fs.Close();
+                if(header.OPCODE == Const.SENDLAST) fs.Close();
             }
         }
 
@@ -170,7 +183,7 @@ namespace ServerSocket
             /// CRC 부분 재전송 할거면 여기서 처리
             /// CRC 1인 패킷들 리스트로 모아서 전송
 
-            byte[] data = Header.AssemblePacket(0, 300, 0, 1, 0, new byte[1]);
+            byte[] data = Header.AssemblePacket(0, Const.SENDLAST, 0, 1, 0, new byte[1]);
             host.Send(data);
         }
 
