@@ -98,7 +98,7 @@ namespace ServerSocket
                 if (handle == this)
                 {
                     byte[] response = Encoding.UTF8.GetBytes("001 reject");
-                    byte[] data = Header.AssemblePacket(0, 001, 0, response.Length, 0, response);
+                    byte[] data = Header.AssemblePacket(0, Const.CONNECT_REJECT, 0, response.Length, 0, response);
                     host.Send(data);
                     return;
                 }
@@ -108,7 +108,7 @@ namespace ServerSocket
             {
                 RootServer.instance.users.Add(this);
                 byte[] response = Encoding.UTF8.GetBytes("000 OK");
-                byte[] data = Header.AssemblePacket(0, 000, 0, response.Length, 0, response);
+                byte[] data = Header.AssemblePacket(0, Const.CONNECT_REQUEST, 0, response.Length, 0, response);
                 host.Send(data);
             }
         }
@@ -123,7 +123,7 @@ namespace ServerSocket
 
             /// 파일 이름과 크기가 적절한지
             byte[] response = Protocol1_File.TransmitFileResponse(fileName, fileSize);
-            byte[] data = Header.AssemblePacket(header.proto_VER, header.OPCODE, 0, response.Length, 0, response);
+            byte[] data = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, response.Length, 0, response);
             host.Send(data);
 
             /// 받은 요청은 로그에 추가
@@ -196,14 +196,14 @@ namespace ServerSocket
             if (isFullRecv)
             {
                 byte[] result = Encoding.UTF8.GetBytes("File upload success");
-                byte[] data = Header.AssemblePacket(0, 300, 0, result.Length, 0, result);
+                byte[] data = Header.AssemblePacket(0, Const.CHECK_PACKET, 0, result.Length, 0, result);
                 host.Send(data);
             }
             /// 해시가 다름. 재전송 요청
             else
             {
                 byte[] result = Encoding.UTF8.GetBytes("File upload fail");
-                byte[] data = Header.AssemblePacket(0, 301, 0, result.Length, 0, result);
+                byte[] data = Header.AssemblePacket(0, Const.CHECK_DIFF, 0, result.Length, 0, result);
                 host.Send(data);
             }
         }

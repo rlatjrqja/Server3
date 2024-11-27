@@ -12,10 +12,17 @@ namespace Protocols
     {
         public const int CONNECT_REQUEST = 000;
         public const int CONNECT_REJECT = 001;
+        public const int CREATE_ACCOUNT = 010;
+        public const int CREATE_FAIL = 011;
+        public const int LOGIN = 020;
+        public const int LOGIN_FAIL = 021;
         public const int FILE_REQUEST = 100;
         public const int SENDING = 200;
         public const int SENDLAST = 210;
         public const int CHECK_PACKET = 300;
+        public const int CHECK_DIFF = 301;
+        public const int DISCONNECT_REQUEST = 400;
+        public const int GET_OFF = 500;
     }
 
     /// <summary>
