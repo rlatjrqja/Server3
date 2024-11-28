@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Json;
 
 public class Protocol3_Json
 {
@@ -35,50 +36,70 @@ public class Protocol3_Json
     }
 
     /// <summary>
-    /// JSON 파일을 byte[]로 변환
+    /// byte[] 타입 데이터를 받아 Json으로 변환하고, 그 Json 객체를 반환
     /// </summary>
-    public static byte[] JsonFileToBytes(string filePath)
+    public static string BytesToJsonString(byte[] jsonData)
     {
-        // JSON 파일의 내용을 읽어서 문자열로 변환
-        string jsonString = File.ReadAllText(filePath, Encoding.UTF8);
+        // byte[]를 문자열로 변환
+        string jsonString = Encoding.UTF8.GetString(jsonData);
 
-        // 문자열을 byte[]로 변환
-        return Encoding.UTF8.GetBytes(jsonString);
+        // JSON 문자열을 JObject로 변환
+        return jsonString;
     }
 
     /// <summary>
-    /// 문자열을 byte[]로 변환
+    /// JSON 파일을 읽어 String로 변환
     /// </summary>
-    public static byte[] JsonStringToBytes(string jsonString)
+    public static string JsonFileToString(string path)
     {
-        // 문자열을 byte[]로 변환
-        return Encoding.UTF8.GetBytes(jsonString);
+        if (!File.Exists(path))
+        {
+            File.WriteAllText(path, "{}"); // 빈 JSON 객체 생성
+        }
+
+        // JSON 파일 생성 및 쓰기
+        string json = File.ReadAllText(path);
+        return json;
+    }
+
+    public static string AddDataIntoJson(string Json, string data)
+    {
+        // JSON 데이터 디시리얼라이즈 (Dictionary로 변환)
+        var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(Json) ?? new Dictionary<string, object>();
+        var newData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+        if (newData == null || newData.Count != 1)
+        {
+            Console.WriteLine("Invalid data format. Ensure data is a single key-value pair.");
+            return null;
+        }
+
+        // 새 데이터의 키와 값 추출
+        var newKey = newData.Keys.First();
+        var newValue = newData[newKey];
+
+        // 중복 검사 및 추가
+        if (dictionary.ContainsKey(newKey))
+        {
+            Console.WriteLine($"Key '{newKey}' already exists in the JSON. No changes made.");
+            return null;
+        }
+        else
+        {
+            dictionary[newKey] = newValue;
+            Console.WriteLine($"Key '{newKey}' added with value '{newValue}'.");
+        }
+
+        // 병합된 데이터를 JSON 파일에 저장
+        return JsonConvert.SerializeObject(dictionary, Formatting.Indented);
     }
 
     /// <summary>
     /// Json 데이터를 받아 지정된 경로에 Json 파일로 저장
     /// </summary>
-    public static void SaveJsonToFile(JObject jsonObject, string filePath, bool pretty = true)
+    public static bool StringToJsonFile(string filePath, string json)
     {
-        // Formatting.Indented 옵션으로 pretty-print 설정
-        Formatting formatting = pretty ? Formatting.Indented : Formatting.None;
-
-        // JSON 객체를 문자열로 변환
-        string jsonString = jsonObject.ToString(formatting);
-
         // 파일에 저장
-        File.WriteAllText(filePath, jsonString, Encoding.UTF8);
-    }
-
-    /// <summary>
-    /// JSON 파일을 읽어 JObject로 변환
-    /// </summary>
-    public static JObject JsonFileToJson(string filePath)
-    {
-        // JSON 파일의 내용을 읽어서 문자열로 변환
-        string jsonString = File.ReadAllText(filePath, Encoding.UTF8);
-
-        // 문자열을 JObject로 변환
-        return JObject.Parse(jsonString);
+        File.WriteAllText(filePath, json, Encoding.UTF8);
+        return true;
     }
 }

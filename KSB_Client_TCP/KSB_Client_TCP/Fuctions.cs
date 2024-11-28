@@ -19,7 +19,7 @@ namespace KSB_Client_TCP
         {
             // byte[] body = Encoding.UTF8.GetBytes("Connection Request"); 로그인 구현으로 비활성
             string info = UserInfo.CreateID();
-            byte[] buffer = Protocol3_Json.JsonStringToBytes(info);
+            byte[] buffer = Encoding.UTF8.GetBytes(info);
             byte[] request = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, buffer.Length, 0, buffer);
             host.Send(request);
             Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");

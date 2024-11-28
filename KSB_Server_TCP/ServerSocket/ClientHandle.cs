@@ -29,7 +29,7 @@ namespace ServerSocket
         public Socket host;
 
         List<Protocol1_File_Log> log_protocol1 = new();
-        string server_dir = @"..\..\..\..\..\KSB_Server_TCP\files"; //ReceivedFile
+        string server_dir = @"..\..\..\..\..\KSB_Server_TCP"; //ReceivedFile
 
         StateMachine SM = new(); /// 일단 구색은 갖췄는데 아직은 사용 안함
 
@@ -119,8 +119,15 @@ namespace ServerSocket
         void CreateAccountRequest(Header header)
         {
             /// 회원 목록 여기에 추가
-            /// 목록에 있는 회원이면
-            
+            byte[] stream = header.BODY;
+            string info = Encoding.UTF8.GetString(stream);
+
+            string filePath = server_dir + @"\database\" + "userDB.json";
+            string fullPath = Path.GetFullPath(filePath);
+            string database = Protocol3_Json.JsonFileToString(fullPath);
+            string updatedata = Protocol3_Json.AddDataIntoJson(database, info);
+            Protocol3_Json.StringToJsonFile(fullPath, updatedata);
+
             byte[] response = Encoding.UTF8.GetBytes("Login success");
             byte[] data = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, response.Length, 0, response);
             host.Send(data);
@@ -155,7 +162,7 @@ namespace ServerSocket
             /// 경로 탐색
             Protocol1_File_Log pf = log_protocol1.Last();
             string fileName = pf.name;
-            string filePath = server_dir + fileName;
+            string filePath = server_dir+ @"\files" + fileName;
             string fullPath = Path.GetFullPath(filePath);
 
             using (FileStream fs = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
