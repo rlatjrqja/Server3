@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Text;
+using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -52,8 +53,11 @@ namespace Login
             }
             while (Password == null || Password.Length < 3);
 
+            SHA256 sha = SHA256.Create();
+            byte[] encrypted = sha.ComputeHash(Encoding.UTF8.GetBytes(Password));
+
             JObject info = new();
-            info.Add(ID, Password);
+            info.Add(ID, encrypted);
             return info.ToString();
         }
     }

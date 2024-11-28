@@ -48,7 +48,8 @@ public class Protocol3_Json
     }
 
     /// <summary>
-    /// JSON 파일을 읽어 String로 변환
+    /// JSON 파일을 읽어 String로 변환.
+    /// 서버측 사용중
     /// </summary>
     public static string JsonFileToString(string path)
     {
@@ -62,6 +63,10 @@ public class Protocol3_Json
         return json;
     }
 
+    /// <summary>
+    /// JSON 파일에 요소 추가.
+    /// 서버측 사용중
+    /// </summary>
     public static string AddDataIntoJson(string Json, string data)
     {
         // JSON 데이터 디시리얼라이즈 (Dictionary로 변환)
@@ -101,5 +106,39 @@ public class Protocol3_Json
         // 파일에 저장
         File.WriteAllText(filePath, json, Encoding.UTF8);
         return true;
+    }
+
+    public static bool IsJsonIncludeData(string json, string data)
+    {
+        try
+        {
+            // JSON 문자열을 딕셔너리로 디시리얼라이즈
+            var jsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            
+            // data 문자열을 딕셔너리로 디시리얼라이즈
+            var dataDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+            
+            // data에서 첫 번째 키 추출
+            var dataKey = dataDictionary.Keys.First();
+            var dataValue = dataDictionary[dataKey];
+
+            // json에서 키 검색
+            if (jsonDictionary.TryGetValue(dataKey, out var value) && value.Equals(dataDictionary[dataKey]))
+            {
+                // 키와 값이 모두 일치
+                Console.WriteLine($"User '{dataKey}' is login.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Can't find user '{dataKey}' in the JSON.");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error occurred: {ex.Message}");
+            return false;
+        }
     }
 }

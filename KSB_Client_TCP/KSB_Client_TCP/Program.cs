@@ -37,10 +37,11 @@ namespace KSB_Client_TCP
             {
                 Console.Clear();
                 Console.WriteLine("==== 클라이언트 메뉴 ====");
-                Console.WriteLine("1. 연결 확인");
-                Console.WriteLine("2. Plane Text 전송");
-                Console.WriteLine("3. 파일 전송");
-                Console.WriteLine("4. 연결 끊기");
+                Console.WriteLine("1. 회원가입");
+                Console.WriteLine("2. 로그인");
+                Console.WriteLine("3. Plane Text 전송");
+                Console.WriteLine("4. 파일 전송");
+                Console.WriteLine("5. 연결 끊기");
                 Console.Write("메뉴를 선택하세요: ");
 
                 string choice = Console.ReadLine();
@@ -52,8 +53,8 @@ namespace KSB_Client_TCP
                         //Dictionary<string, byte[]> info = UserInfo.CreateID();
                         //byte[] login_data = Protocol3_Json.DictionaryToJson(info);
                         Fuctions.CreateAccount(host);
-                        Header response_login = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_login, Const.CREATE_ACCOUNT, "회원가입 성공", "가입 실패"))
+                        Header response_create = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_create, Const.CREATE_ACCOUNT, "회원가입 성공", "가입 실패"))
                         {
 
                         }
@@ -62,10 +63,21 @@ namespace KSB_Client_TCP
 
                     case "2":
                         // Plane Text 전송 - 아직 미구현
-                        Console.WriteLine("Plane Text 전송 기능은 아직 구현되지 않았습니다.");
+                        Fuctions.TryLogin(host);
+                        Header response_login = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_login, Const.LOGIN, "로그인 성공", "로그인 실패"))
+                        {
+
+                        }
+                        else break;
                         break;
 
                     case "3":
+                        // Plane Text 전송 - 아직 미구현
+                        Console.WriteLine("Plane Text 전송 기능은 아직 구현되지 않았습니다.");
+                        break;
+
+                    case "4":
                         // 파일 전송
                         Console.WriteLine("파일 전송을 시작합니다...");
 
@@ -86,7 +98,7 @@ namespace KSB_Client_TCP
                         else break;
                         break;
 
-                    case "4":
+                    case "5":
                         // 연결 끊기
                         Console.WriteLine("서버와 연결을 종료합니다...");
                         Fuctions.Disconnect(host);

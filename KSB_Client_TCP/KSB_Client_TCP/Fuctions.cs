@@ -22,7 +22,19 @@ namespace KSB_Client_TCP
             byte[] buffer = Encoding.UTF8.GetBytes(info);
             byte[] request = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, buffer.Length, 0, buffer);
             host.Send(request);
-            Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
+            Console.WriteLine($"회원가입 요청 {info}");
+        }
+
+        /// <summary>
+        /// OPCODE 020
+        /// </summary>
+        public static void TryLogin(Socket host)
+        {
+            string info = UserInfo.CreateID();
+            byte[] buffer = Encoding.UTF8.GetBytes(info);
+            byte[] request = Header.AssemblePacket(0, Const.LOGIN, 0, buffer.Length, 0, buffer);
+            host.Send(request);
+            Console.WriteLine($"로그인 요청 {info}");
         }
 
         /// <summary>

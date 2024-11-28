@@ -56,6 +56,9 @@ namespace ServerSocket
                         case Const.CREATE_ACCOUNT:
                             CreateAccountRequest(header);
                             break;
+                        case Const.LOGIN:
+                            TryLoginRequest(header);
+                            break;
                         case Const.FILE_REQUEST:
                             /// 파일 업로드 요청 받음
                             FileUploadRequest(header); 
@@ -122,7 +125,7 @@ namespace ServerSocket
             byte[] stream = header.BODY;
             string info = Encoding.UTF8.GetString(stream);
 
-            string filePath = server_dir + @"\database\" + "userDB.json";
+            string filePath = server_dir + @"\database\userDB.json";
             string fullPath = Path.GetFullPath(filePath);
             string database = Protocol3_Json.JsonFileToString(fullPath);
             string updatedata = Protocol3_Json.AddDataIntoJson(database, info);
@@ -131,6 +134,30 @@ namespace ServerSocket
             byte[] response = Encoding.UTF8.GetBytes("Login success");
             byte[] data = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, response.Length, 0, response);
             host.Send(data);
+        }
+
+        void TryLoginRequest(Header header)
+        {
+            byte[] stream = header.BODY;
+            string info = Encoding.UTF8.GetString(stream);
+
+            string filePath = server_dir + @"\database\userDB.json";
+            string fullPath = Path.GetFullPath(filePath);
+            string database = Protocol3_Json.JsonFileToString(fullPath);
+            bool isvalid = Protocol3_Json.IsJsonIncludeData(database, info);
+
+            if (isvalid)
+            {
+                byte[] response = Encoding.UTF8.GetBytes("Login success");
+                byte[] data = Header.AssemblePacket(0, Const.LOGIN, 0, response.Length, 0, response);
+                host.Send(data);
+            }
+            else
+            {
+                byte[] response = Encoding.UTF8.GetBytes("Login fail");
+                byte[] data = Header.AssemblePacket(0, Const.LOGIN_FAIL, 0, response.Length, 0, response);
+                host.Send(data);
+            }
         }
 
         void FileUploadRequest(Header header)
