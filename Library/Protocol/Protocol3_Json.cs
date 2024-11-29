@@ -91,7 +91,7 @@ public class Protocol3_Json
         else
         {
             dictionary[newKey] = newValue;
-            Console.WriteLine($"Key '{newKey}' added with value '{newValue}'.");
+            Console.WriteLine($"New User '{newKey}' added.");
         }
 
         // 병합된 데이터를 JSON 파일에 저장

@@ -59,26 +59,28 @@ namespace Protocols
             request.AddRange(BitConverter.GetBytes(file_size));
             return request.ToArray();
         }
-        public static Byte[] TransmitFileResponse(string filename, int size)
+        public static int TransmitFileResponse(string filename, int size)
         {
             /// 파일 이름 길이 20글자 제한
             if (filename.Length > 40)
             {
                 //return Encoding.UTF8.GetBytes("101_filename is too long");
-                return BitConverter.GetBytes(101);
-                
+                //return BitConverter.GetBytes(101);
+                return 101;
             }
 
             else if (size > int.MaxValue)
             {
                 //return Encoding.UTF8.GetBytes("102_file is too big");
-                return BitConverter.GetBytes(102);
+                //return BitConverter.GetBytes(102);
+                return 102;
             }
 
             else
             {
                 //return Encoding.UTF8.GetBytes("100_OK");
-                return BitConverter.GetBytes(100);
+                //return BitConverter.GetBytes(100);
+                return 100;
             }
         }
 

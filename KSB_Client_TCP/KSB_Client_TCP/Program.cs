@@ -23,8 +23,9 @@ namespace KSB_Client_TCP
             Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             host.Connect(ipep);
 
-            byte[] connection = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, 1, 0, new byte[1]);
+            byte[] connection = Header.AssemblePacket(0, Const.CONNECT_REQUEST, 0, 1, 0, new byte[1]);
             host.Send(connection);
+
             Header response_connect = WaitForServerResponse(host);
             if (CheckOPCODE(response_connect, Const.CONNECT_REQUEST, "서버 접속 성공", "서버 접속 실패"))
             {
@@ -58,7 +59,11 @@ namespace KSB_Client_TCP
                         {
 
                         }
-                        else break;
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_create.BODY);
+                            Console.WriteLine(reason);
+                        }
                         break;
 
                     case "2":
@@ -69,7 +74,11 @@ namespace KSB_Client_TCP
                         {
 
                         }
-                        else break;
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_login.BODY);
+                            Console.WriteLine(reason);
+                        }
                         break;
 
                     case "3":
@@ -87,7 +96,11 @@ namespace KSB_Client_TCP
                         {
                             Fuctions.FileTransfer(host, rootDir, name);
                         }
-                        else break;
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_file.BODY);
+                            Console.WriteLine(reason);
+                        }
 
                         Header response_end = WaitForServerResponse(host);
                         if (CheckOPCODE(response_end, Const.SENDLAST, "마지막 패킷 수신 알림", "수신 중 이상 발생"))
@@ -95,7 +108,11 @@ namespace KSB_Client_TCP
                             // 해시 전송
                             Fuctions.FileCheckRequest(host, rootDir, name);
                         }
-                        else break;
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_end.BODY);
+                            Console.WriteLine(reason);
+                        }
                         break;
 
                     case "5":

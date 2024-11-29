@@ -7,17 +7,18 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ServerSocket
 {
     class StateMachine
     {
-        public enum State { Waiting, Listening, Recieving }
-        public State state { get; private set; }
+        public enum AuthenticState { Guest, Member }
+        public AuthenticState State { get; private set; }
 
-        public StateMachine() { state = State.Waiting; }
-        public State GetState() { return state; }
-        public void SetState(State state) {  this.state = state; }
+        public StateMachine() { State = AuthenticState.Guest; }
+        public AuthenticState GetState() { return State; }
+        public void SetState(AuthenticState state) {  this.State = state; }
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ namespace ServerSocket
 
             Task.Run(() =>
             {
-                SM.SetState(StateMachine.State.Listening);
+                // SM.SetState(StateMachine.AuthenticState.Listening);
                 while (true)
                 {
                     /// 받은 데이터를 분리. 패킷 정보를 담은 헤더와 정보 및 실제 데이터를 담은 바디로 구성
@@ -129,11 +130,20 @@ namespace ServerSocket
             string fullPath = Path.GetFullPath(filePath);
             string database = Protocol3_Json.JsonFileToString(fullPath);
             string updatedata = Protocol3_Json.AddDataIntoJson(database, info);
-            Protocol3_Json.StringToJsonFile(fullPath, updatedata);
 
-            byte[] response = Encoding.UTF8.GetBytes("Login success");
-            byte[] data = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, response.Length, 0, response);
-            host.Send(data);
+            if (updatedata != null)
+            {
+                Protocol3_Json.StringToJsonFile(fullPath, updatedata);
+                byte[] response = Encoding.UTF8.GetBytes("Login success");
+                byte[] data = Header.AssemblePacket(0, Const.CREATE_ACCOUNT, 0, response.Length, 0, response);
+                host.Send(data);
+            }
+            else
+            {
+                byte[] response = Encoding.UTF8.GetBytes("Login fail");
+                byte[] data = Header.AssemblePacket(0, Const.CREATE_FAIL, 0, response.Length, 0, response);
+                host.Send(data);
+            }
         }
 
         void TryLoginRequest(Header header)
@@ -162,19 +172,44 @@ namespace ServerSocket
 
         void FileUploadRequest(Header header)
         {
-            /// 파일 내용물에도 헤더가 있음, 이름길이 - 이름 - 파일크기 순
-            byte[] stream = header.BODY;
-            int fileName_length = BitConverter.ToInt32(stream, 0);
-            string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
-            int fileSize = BitConverter.ToInt32(stream, sizeof(int) + fileName_length);
+            if(SM.State == StateMachine.AuthenticState.Member)
+            {
+                /// 파일 내용물에도 헤더가 있음, 이름길이 - 이름 - 파일크기 순
+                byte[] stream = header.BODY;
+                int fileName_length = BitConverter.ToInt32(stream, 0);
+                string fileName = Encoding.UTF8.GetString(stream, sizeof(int), fileName_length);
+                int fileSize = BitConverter.ToInt32(stream, sizeof(int) + fileName_length);
 
-            /// 파일 이름과 크기가 적절한지
-            byte[] response = Protocol1_File.TransmitFileResponse(fileName, fileSize);
-            byte[] data = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, response.Length, 0, response);
-            host.Send(data);
+                /// 파일 이름과 크기가 적절한지
+                int retult = Protocol1_File.TransmitFileResponse(fileName, fileSize);
+                switch(retult)
+                {
+                    case 100:
+                        byte[] response1 = Encoding.UTF8.GetBytes("100_OK");
+                        byte[] data1 = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, response1.Length, 0, response1);
+                        host.Send(data1);
+                        break;
+                    case 101:
+                        byte[] response2 = Encoding.UTF8.GetBytes("filename is too long"); 
+                        byte[] data2 = Header.AssemblePacket(0, Const.FILE_REJECT, 0, response2.Length, 0, response2);
+                        host.Send(data2);
+                        break;
+                    case 102:
+                        byte[] response3 = Encoding.UTF8.GetBytes("file is too big");
+                        byte[] data3 = Header.AssemblePacket(0, Const.FILE_REJECT, 0, response3.Length, 0, response3);
+                        host.Send(data3);
+                        break;
+                }
 
-            /// 받은 요청은 로그에 추가
-            log_protocol1.Add(new Protocol1_File_Log(fileSize, fileName, fileName_length));
+                /// 받은 요청은 로그에 추가
+                log_protocol1.Add(new Protocol1_File_Log(fileSize, fileName, fileName_length));
+            }
+            else
+            {
+                byte[] response = Encoding.UTF8.GetBytes("You have to login first.");
+                byte[] data = Header.AssemblePacket(0, Const.FILE_REJECT, 0, response.Length, 0, response);
+                host.Send(data);
+            }
         }
 
         void FileReceive(Header header)
