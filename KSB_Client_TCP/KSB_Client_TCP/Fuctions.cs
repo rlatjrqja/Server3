@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KSB_Client_TCP
 {
@@ -46,9 +47,23 @@ namespace KSB_Client_TCP
             byte[] binary = Protocol1_File.FileToBinary(rootDir, name);
             Console.WriteLine($"파일 크기: {binary.Length} 바이트");
             byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
-            byte[] data = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, request.Length, 0, request);
+            byte[] data = Header.AssemblePacket(1, Const.FILE_REQUEST, 0, request.Length, 0, request);
             host.Send(data);
             Console.WriteLine("파일 전송 가능 상태 확인");
+        }
+
+        /// <summary>
+        /// OPCODE 110
+        /// </summary>
+        public static void TextTransfer(Socket host)
+        {
+            byte[] text = Protocol2_Plain.GetMessage();
+
+            MyAES aes = new MyAES();
+            byte[] encryptedSegment = aes.EncryptData(text);
+
+            byte[] data = Header.AssemblePacket(2, Const.TEXT_SEND, 0, encryptedSegment.Length, 0, encryptedSegment);
+            host.Send(data);
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ namespace Protocols
 {
     public class Protocol2_Plain
     {
-        public static string? GetOneMessage(ref string data)
+        public static string? SubcatOneWord(ref string data)
         {
             int startIndex = data.IndexOf('\"');
             int endIndex = data.IndexOf('\"') + 1;
@@ -22,5 +22,18 @@ namespace Protocols
             return message;
         }
 
+        public static byte[] GetMessage()
+        {
+            string message;
+            do
+            {
+                Console.Write("보낼 메세지: ");
+                message = Console.ReadLine();
+            }
+            while (message == null || message.Length < 1);
+
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            return buffer;
+        }
     }
 }

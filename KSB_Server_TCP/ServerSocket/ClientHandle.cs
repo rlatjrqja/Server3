@@ -64,9 +64,20 @@ namespace ServerSocket
                             /// 파일 업로드 요청 받음
                             FileUploadRequest(header); 
                             break;
+                        case Const.TEXT_SEND:
+                            switch (header.proto_VER)
+                            {
+                                case 1:
+
+                                    break;
+                                case 2:
+                                    TextReceive(header);
+                                    break;
+                            }
+                            break;
                         case Const.SENDING:
                             /// 파일 받는 중
-                            FileReceive(header); 
+                            FileReceive(header);
                             break;
                         case Const.SENDLAST:
                             /// 파일 받기 끝
@@ -210,6 +221,20 @@ namespace ServerSocket
                 byte[] data = Header.AssemblePacket(0, Const.FILE_REJECT, 0, response.Length, 0, response);
                 host.Send(data);
             }
+        }
+
+        private void TextReceive(Header header)
+        {
+            byte[] encryptedData = header.BODY;
+            MyAES aes = new MyAES();
+            byte[] decryptedData = aes.DecryptData(encryptedData);
+            string message = Encoding.UTF8.GetString(decryptedData);
+            Console.WriteLine(message);
+
+            DateTime time = new();
+            byte[] result = BitConverter.GetBytes(time.Second);
+            byte[] data = Header.AssemblePacket(0, Const.TEXT_SEND, 0, result.Length, 0, result);
+            host.Send(data);
         }
 
         void FileReceive(Header header)

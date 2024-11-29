@@ -50,7 +50,7 @@ namespace KSB_Client_TCP
                 switch (choice)
                 {
                     case "1":
-                        // 클라이언트 소켓 생성 및 연결
+                        // 회원가입
                         //Dictionary<string, byte[]> info = UserInfo.CreateID();
                         //byte[] login_data = Protocol3_Json.DictionaryToJson(info);
                         Fuctions.CreateAccount(host);
@@ -67,7 +67,7 @@ namespace KSB_Client_TCP
                         break;
 
                     case "2":
-                        // Plane Text 전송 - 아직 미구현
+                        // 로그인
                         Fuctions.TryLogin(host);
                         Header response_login = WaitForServerResponse(host);
                         if (CheckOPCODE(response_login, Const.LOGIN, "로그인 성공", "로그인 실패"))
@@ -82,8 +82,14 @@ namespace KSB_Client_TCP
                         break;
 
                     case "3":
-                        // Plane Text 전송 - 아직 미구현
-                        Console.WriteLine("Plane Text 전송 기능은 아직 구현되지 않았습니다.");
+                        // Plane Text 전송
+                        Fuctions.TextTransfer(host);
+                        Header response_text = WaitForServerResponse(host);
+                        string response_msg = Encoding.UTF8.GetString(response_text.BODY);
+                        if (CheckOPCODE(response_text, Const.TEXT_SEND, response_msg, response_msg))
+                        {
+
+                        }
                         break;
 
                     case "4":
@@ -100,6 +106,7 @@ namespace KSB_Client_TCP
                         {
                             string reason = Encoding.UTF8.GetString(response_file.BODY);
                             Console.WriteLine(reason);
+                            break;
                         }
 
                         Header response_end = WaitForServerResponse(host);

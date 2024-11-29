@@ -17,7 +17,8 @@ namespace Protocols
         public const int LOGIN = 020;
         public const int LOGIN_FAIL = 021;
         public const int FILE_REQUEST = 100;
-        public const int FILE_REJECT = 100;
+        public const int FILE_REJECT = 101;
+        public const int TEXT_SEND = 110;
         public const int SENDING = 200;
         public const int SENDLAST = 210;
         public const int CHECK_PACKET = 300;
