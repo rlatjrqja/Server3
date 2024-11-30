@@ -1,13 +1,8 @@
 ﻿using Integrity;
 using Login;
 using Protocols;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KSB_Client_TCP
 {
@@ -102,6 +97,62 @@ namespace KSB_Client_TCP
                 Console.WriteLine(reason);
             }
         }
+        /// <summary>
+        /// OPCODE 100
+        /// </summary>
+        public static string SelectFile(string rootDir)
+        {
+            try
+            {
+                // 1. 상대 경로를 절대 경로로 변환
+                string absolutePath = Path.GetFullPath(rootDir);
+
+                // 2. 디렉토리가 존재하는지 확인
+                if (!Directory.Exists(absolutePath))
+                {
+                    Console.WriteLine("해당 디렉토리가 존재하지 않습니다.");
+                    return null;
+                }
+
+                // 3. 디렉토리 내 파일 이름 불러오기
+                List<string> fileNames = new List<string>(Directory.GetFiles(absolutePath));
+
+                // 파일 이름이 없을 경우 처리
+                if (fileNames.Count == 0)
+                {
+                    Console.WriteLine("디렉토리에 파일이 없습니다.");
+                    return null;
+                }
+
+                // 4. 파일 이름 리스트 출력 (한 줄에 하나씩)
+                for (int i = 0; i < fileNames.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {Path.GetFileName(fileNames[i])}");
+                }
+
+                // 5. 사용자 입력 받아 번호에 해당하는 파일 이름 반환
+                while (true)
+                {
+                    Console.Write("전송할 파일 번호: ");
+                    string input = Console.ReadLine();
+
+                    if (int.TryParse(input, out int index) && index > 0 && index <= fileNames.Count)
+                    {
+                        Console.WriteLine($"선택된 파일: {Path.GetFileName(fileNames[index - 1])}");
+                        return Path.GetFileName(fileNames[index - 1]); // 파일 이름 반환
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못된 입력입니다. 올바른 번호를 입력해주세요.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"오류 발생: {ex.Message}");
+                return null;
+            }
+        }
 
         /// <summary>
         /// OPCODE 100
@@ -124,8 +175,31 @@ namespace KSB_Client_TCP
             else
             {
                 string reason = Encoding.UTF8.GetString(response_file.BODY);
-                Console.WriteLine(reason);
-                return;
+                
+                if (CheckOPCODE(response_file, Const.FILE_RENAME,
+                    $"{name} already exists in path.\nDo you like to change name to \"{reason}\"? Y/N", reason))
+                {
+                    string choice = Console.ReadLine();
+                    if (choice == "Y" || choice == "y")
+                    {
+                        byte[] request_r = Protocol1_File.TransmitFileRequest(reason.Length, reason, binary.Length);
+                        byte[] data_r = Header.AssemblePacket(1, Const.FILE_REQUEST, 0, request_r.Length, 0, request_r);
+                        host.Send(data_r);
+
+                        Header response_file_r = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_file_r, Const.FILE_REQUEST, "파일 전송 가능", "파일 전송 불가"))
+                        {
+                            FileTransfer(host, rootDir, name);
+                        }
+                        else return;
+                        //FileTransferRequest(host, rootDir, reason);
+                    }
+                    else if (choice == "N" || choice == "n")
+                    {
+                        Console.WriteLine("Cancel file transfer");
+                        return;
+                    }
+                }
             }
 
             Header response_end = WaitForServerResponse(host);
@@ -175,7 +249,7 @@ namespace KSB_Client_TCP
             {
                 byte[] encryptedSegment = aes.EncryptData(packets[i]);
 
-                if (packets[i] != packets.Last())
+                if (i != packets.Count-1)
                 {
                     // 암호화된 패킷 전송
                     host.Send(Header.AssemblePacket(1, Const.SENDING, i, encryptedSegment.Length, 0, encryptedSegment));

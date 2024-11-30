@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static ServerSocket.StateMachine;
+using System.Reflection.PortableExecutable;
 
 namespace ServerSocket
 {
@@ -44,7 +45,12 @@ namespace ServerSocket
                 {
                     /// 받은 데이터를 분리. 패킷 정보를 담은 헤더와 정보 및 실제 데이터를 담은 바디로 구성
                     byte[] packet = new byte[4096];
-                    int length = host.Receive(packet);
+                    try { host.Receive(packet); }
+                    catch { 
+                        host.Disconnect(false);
+                        RootServer.instance.users.Remove(this);
+                        return;
+                    }
                     Header header = new();
                     header.DisassemblePacket(packet);
 
@@ -191,7 +197,7 @@ namespace ServerSocket
 
         void FileUploadRequest(Header header)
         {
-            if(SM.State == StateMachine.AuthenticState.Member)
+            if(SM.State == AuthenticState.Member)
             {
                 /// 파일 내용물에도 헤더가 있음, 이름길이 - 이름 - 파일크기 순
                 byte[] stream = header.BODY;
@@ -200,7 +206,7 @@ namespace ServerSocket
                 int fileSize = BitConverter.ToInt32(stream, sizeof(int) + fileName_length);
 
                 /// 파일 이름과 크기가 적절한지
-                int retult = Protocol1_File.TransmitFileResponse(fileName, fileSize);
+                int retult = Protocol1_File.TransmitFileResponse(fileName, fileSize, server_dir + @"\files\");
                 switch(retult)
                 {
                     case 100:
@@ -217,6 +223,26 @@ namespace ServerSocket
                         byte[] response3 = Encoding.UTF8.GetBytes("file is too big");
                         byte[] data3 = Header.AssemblePacket(0, Const.FILE_REJECT, 0, response3.Length, 0, response3);
                         host.Send(data3);
+                        break;
+                    case 103:
+                        int i = 1;
+                        while (i<100)
+                        {
+                            string[] splited = fileName.Split('.');
+                            string chagedName = splited[0]+ $" ({i})." + splited[1];
+                            if (File.Exists(server_dir + @"\files\" + chagedName))
+                            {
+                                i++;
+                            }
+                            else
+                            {
+                                byte[] response4 = Encoding.UTF8.GetBytes(chagedName);
+                                byte[] data4 = Header.AssemblePacket(0, Const.FILE_RENAME, 0, response4.Length, 0, response4);
+                                host.Send(data4);
+                                break;
+                            }
+                        }
+                        
                         break;
                 }
 
@@ -245,6 +271,11 @@ namespace ServerSocket
             host.Send(data);
         }
 
+        private void FileReceiveStart(Header header)
+        {
+            
+        }
+
         void FileReceive(Header header)
         {
             /// 받은 파일 바이너리 (암호화 전)
@@ -257,7 +288,7 @@ namespace ServerSocket
             /// 경로 탐색
             Protocol1_File_Log pf = log_protocol1.Last();
             string fileName = pf.name;
-            string filePath = server_dir+ @"\files" + fileName;
+            string filePath = server_dir+ @"\files\" + fileName;
             string fullPath = Path.GetFullPath(filePath);
 
             using (FileStream fs = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
@@ -275,8 +306,6 @@ namespace ServerSocket
                 // Append decrypted data to the file
                 fs.Position = fs.Length;
                 fs.Write(decryptedData, 0, bytesToRead);
-
-                if(header.OPCODE == Const.SENDLAST) fs.Close();
             }
         }
 
@@ -284,7 +313,7 @@ namespace ServerSocket
         {
             /// CRC 부분 재전송 할거면 여기서 처리
             /// CRC 1인 패킷들 리스트로 모아서 전송
-
+            
             byte[] data = Header.AssemblePacket(0, Const.SENDLAST, 0, 1, 0, new byte[1]);
             host.Send(data);
         }
@@ -299,7 +328,7 @@ namespace ServerSocket
             /// 경로 탐색
             Protocol1_File_Log pf = log_protocol1.Last();
             string fileName = pf.name;
-            string filePath = server_dir + fileName;
+            string filePath = server_dir+ @"\files\" + fileName;
             string fullPath = Path.GetFullPath(filePath);
 
             /// 전송 받은 파일 해시값 계산
@@ -330,6 +359,7 @@ namespace ServerSocket
             byte[] data = Header.AssemblePacket(0, Const.CHECK_DIFF, 0, result.Length, 0, result);
             host.Send(data);
             host.Disconnect(true);
+            RootServer.instance.users.Remove(this);
         }
     }
 }

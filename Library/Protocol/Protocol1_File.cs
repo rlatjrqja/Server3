@@ -59,7 +59,7 @@ namespace Protocols
             request.AddRange(BitConverter.GetBytes(file_size));
             return request.ToArray();
         }
-        public static int TransmitFileResponse(string filename, int size)
+        public static int TransmitFileResponse(string filename, int size, string dir)
         {
             /// 파일 이름 길이 20글자 제한
             if (filename.Length > 40)
@@ -74,6 +74,11 @@ namespace Protocols
                 //return Encoding.UTF8.GetBytes("102_file is too big");
                 //return BitConverter.GetBytes(102);
                 return 102;
+            }
+
+            else if(File.Exists(dir + filename))
+            {
+                return 103;
             }
 
             else
