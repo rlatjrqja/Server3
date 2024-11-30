@@ -2,6 +2,10 @@
 using System.Net;
 using System.Text;
 using Protocols;
+using Encryption;
+using Integrity;
+using Login;
+using System;
 
 namespace KSB_Client_TCP
 {
@@ -9,142 +13,163 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            Socket client;
-            Protocol protocol = new Protocol();
-            string root = @"..\..\..\..\..\SendingFile";
+            string ip = "192.168.45.232"; // 고정 IP
+            //string ip = "172.18.27.199"; // 고정 IP
+            int port = 50001;            // 고정 포트 번호
+            string rootDir = @"..\..\..\..\..\KSB_Client_TCP\files";
             string name = @"\Dummy.xlsx";
 
-            try
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
+            Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            host.Connect(ipep);
+
+            byte[] connection = Header.AssemblePacket(0, Const.CONNECT_REQUEST, 0, 1, 0, new byte[1]);
+            host.Send(connection);
+
+            Header response_connect = WaitForServerResponse(host);
+            if (CheckOPCODE(response_connect, Const.CONNECT_REQUEST, "서버 접속 성공", "서버 접속 실패"))
             {
-                // Socket 수준에서 연결
-                //string ip = "172.18.27.199";
-                string ip = "192.168.45.232";
-                int port = 50000;
-                IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
-                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                client.Connect(ipep);
 
+            }
 
+            bool running = true;
 
-                Task.Run(() => 
+            while (running)
+            {
+                Console.Clear();
+                Console.WriteLine("==== 클라이언트 메뉴 ====");
+                Console.WriteLine("1. 회원가입");
+                Console.WriteLine("2. 로그인");
+                Console.WriteLine("3. Plane Text 전송");
+                Console.WriteLine("4. 파일 전송");
+                Console.WriteLine("5. 연결 끊기");
+                Console.Write("메뉴를 선택하세요: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
                 {
-                    while (true)
-                    {
-                        if(ReceivePacket(client, protocol))
+                    case "1":
+                        // 회원가입
+                        //Dictionary<string, byte[]> info = UserInfo.CreateID();
+                        //byte[] login_data = Protocol3_Json.DictionaryToJson(info);
+                        Fuctions.CreateAccount(host);
+                        Header response_create = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_create, Const.CREATE_ACCOUNT, "회원가입 성공", "가입 실패"))
                         {
-                            switch (protocol.OPCODE)
-                            {
-                                case 000:
-                                    Console.WriteLine("서버 접속 성공");
-                                    break;
-                                case 100:
-                                    Console.WriteLine("파일 전송 가능");
-                                    //client.Send(BitConverter.GetBytes(400));
-                                    break;
-                                case 101:
-                                    Console.WriteLine("파일명으로 인한 전송 실패");
-                                    break;
-                                case 102:
-                                    Console.WriteLine("파일 크기로 인한 전송 실패");
-                                    break;
-                                case 200:
 
-                                    break;
-                                case 500:
-                                    return;
-                                default:
-                                    Console.WriteLine("디버깅");
-                                    break;
-                            }
                         }
-                    }
-                });
-                
-
-                // 연결 요청
-                int count = 0;
-                while (count++ < 5)
-                {
-                    byte[] request = protocol.StartConnectionRequest();
-                    client.Send(request);
-                    Console.WriteLine($"서버 접속 요청 [Length]:{request.Length}");
-
-                    if (protocol.OPCODE == 000) break;
-                    else Thread.Sleep(1000);
-                }
-                count = 0;
-
-                // 보낼 파일 준비
-                while (count++ < 5)
-                {
-                    //FileConverter cv = new FileConverter();
-                    string filename = root + name;
-                    string fullPath = Path.GetFullPath(filename);
-                    var file = new FileInfo(fullPath);
-                    byte[] binary = new byte[file.Length]; // 바이너리 버퍼
-
-                    ///
-                    // 파일이 존재하는지
-                    if (file.Exists)
-                    {
-                        var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
-
-                        // 파일을 IO로 읽어온다.
-                        stream.Read(binary, 0, binary.Length);
-                        //return binary;
-                    }
-                    //else return null;
-                    ///
-
-                    byte[] request = protocol.TransmitFileRequest(file.Name.Length, file.Name, binary.Length);
-                    client.Send(request);
-                    Console.WriteLine("파일 전송 가능 상태 확인");
-
-                    if (protocol.OPCODE == 100)
-                    {
-                        // 파일 보내도 된다 (100 OK) 받고 파일 전송
-                        List<byte[]> packets = protocol.TransmitFile(binary);
-                        for(int i = 0;i<packets.Count;i++)
+                        else
                         {
-                            client.Send(packets[i]);
-                            Console.WriteLine($"[Send] { packets[i].Length} Byte");
+                            string reason = Encoding.UTF8.GetString(response_create.BODY);
+                            Console.WriteLine(reason);
                         }
                         break;
-                    }
-                    else Thread.Sleep(1000);
+
+                    case "2":
+                        // 로그인
+                        Fuctions.TryLogin(host);
+                        Header response_login = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_login, Const.LOGIN, "로그인 성공", "로그인 실패"))
+                        {
+
+                        }
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_login.BODY);
+                            Console.WriteLine(reason);
+                        }
+                        break;
+
+                    case "3":
+                        // Plane Text 전송
+                        Fuctions.TextTransfer(host);
+                        Header response_text = WaitForServerResponse(host);
+                        string response_msg = Encoding.UTF8.GetString(response_text.BODY);
+                        if (CheckOPCODE(response_text, Const.TEXT_SEND, response_msg, response_msg))
+                        {
+
+                        }
+                        break;
+
+                    case "4":
+                        // 파일 전송
+                        Console.WriteLine("파일 전송을 시작합니다...");
+
+                        Fuctions.FileTransferRequest(host, rootDir, name);
+                        Header response_file = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_file, Const.FILE_REQUEST, "파일 전송 가능", "파일 전송 불가"))
+                        {
+                            Fuctions.FileTransfer(host, rootDir, name);
+                        }
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_file.BODY);
+                            Console.WriteLine(reason);
+                            break;
+                        }
+
+                        Header response_end = WaitForServerResponse(host);
+                        if (CheckOPCODE(response_end, Const.SENDLAST, "마지막 패킷 수신 알림", "수신 중 이상 발생"))
+                        {
+                            // 해시 전송
+                            Fuctions.FileCheckRequest(host, rootDir, name);
+                        }
+                        else
+                        {
+                            string reason = Encoding.UTF8.GetString(response_end.BODY);
+                            Console.WriteLine(reason);
+                        }
+                        break;
+
+                    case "5":
+                        // 연결 끊기
+                        Console.WriteLine("서버와 연결을 종료합니다...");
+                        Fuctions.Disconnect(host);
+                        running = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("잘못된 입력입니다. 다시 선택하세요.");
+                        break;
                 }
 
-                while (true)
+                if (running)
                 {
-
+                    Console.WriteLine("\n계속하려면 Enter 키를 누르세요...");
+                    Console.ReadLine();
                 }
             }
-            catch (Exception e) { Console.WriteLine(e.Message); }
         }
 
-        static bool ReceivePacket(Socket socket, Protocol protocol)
+        /// <summary>
+        /// 서버에 요청 보낸 뒤 응답을 대기 하는 용도
+        /// </summary>
+        public static Header WaitForServerResponse(Socket host)
         {
-            byte[] buffer = new byte[1024];
-            try
+            byte[] buffer = new byte[4096];
+            int bytesReceived = host.Receive(buffer);
+            if (bytesReceived > 0)
             {
-                int bytesReceived = socket.Receive(buffer);
-                if (bytesReceived > 0)
-                {
-                    protocol.MakeHeader(buffer);
-
-                    string msg = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
-                    Console.Write(msg);
-                    return true;
-                }
-                return false;
+                Header header = new Header();
+                header.DisassemblePacket(buffer);
+                return header;
             }
-            catch (SocketException ex)
+            return null;
+        }
+
+        public static bool CheckOPCODE(Header hd, int opcode, string correctMSG, string failMSG)
+        {
+            if (hd.OPCODE == opcode)
             {
-                Console.WriteLine($"수신 중 오류 발생: {ex.Message}");
+                Console.WriteLine(correctMSG);
+                return true;
+            }
+            else
+            {
+                Console.WriteLine(failMSG);
                 return false;
             }
         }
-
-        //void 
     }
 }

@@ -33,8 +33,11 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-SendingFile/*.*
-ReceivedFile/*.*
+
+KSB_Server_TCP/files/*
+KSB_Client_TCP/files/*
+!KSB_Server_TCP/files/.gitkeep
+!KSB_Client_TCP/files/.gitkeep
 
 # Visual Studio 2015/2017 cache/options directory
 /.vs
