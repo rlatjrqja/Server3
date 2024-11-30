@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static ServerSocket.StateMachine;
 
 namespace ServerSocket
 {
@@ -17,7 +18,6 @@ namespace ServerSocket
         public AuthenticState State { get; private set; }
 
         public StateMachine() { State = AuthenticState.Guest; }
-        public AuthenticState GetState() { return State; }
         public void SetState(AuthenticState state) {  this.State = state; }
     }
 
@@ -32,7 +32,7 @@ namespace ServerSocket
         List<Protocol1_File_Log> log_protocol1 = new();
         string server_dir = @"..\..\..\..\..\KSB_Server_TCP"; //ReceivedFile
 
-        StateMachine SM = new(); /// 일단 구색은 갖췄는데 아직은 사용 안함
+        StateMachine SM = new();
 
         public ClientHandle(Socket client)
         {
@@ -171,6 +171,7 @@ namespace ServerSocket
             {
                 byte[] response = Encoding.UTF8.GetBytes("Login success");
                 byte[] data = Header.AssemblePacket(0, Const.LOGIN, 0, response.Length, 0, response);
+                SM.SetState(AuthenticState.Member);
                 host.Send(data);
             }
             else

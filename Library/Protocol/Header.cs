@@ -77,15 +77,13 @@ namespace Protocols
             packet.AddRange(BitConverter.GetBytes((uint)len));
             packet.AddRange(BitConverter.GetBytes((ushort)crc));
 
-            /// 헤더를 20 바이트로 만들기 위한 발버둥
-            /// 암호화를 고려해 body 크기를 4080 으로 맞추기 위함
+            /// 헤더를 16 바이트로 만들기 위한 발버둥
             int count = packet.Count%16;
             while(count != 0 && count != 16)
             {
                 packet.Add(0x00);
                 count++;
             }
-            //packet.AddRange(new Byte[7] { 0x00,0x00,0x00, 0x00, 0x00, 0x00, 0x00 }); 
             packet.AddRange(data);
 
             return packet.ToArray();

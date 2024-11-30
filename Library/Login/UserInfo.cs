@@ -8,7 +8,8 @@ namespace Login
 {
     public class UserInfo
     {
-        /*public Dictionary<string, byte[]> CreateID()
+        /*
+        public Dictionary<string, byte[]> CreateID()
         {
             string ID = null;
             string Password = null;
@@ -32,7 +33,8 @@ namespace Login
             info.Add("Password", Convert.FromBase64String(Password));
 
             return info;
-        }*/
+        }
+        */
 
         public static string CreateID()
         {

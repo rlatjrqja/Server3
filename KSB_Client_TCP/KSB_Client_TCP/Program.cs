@@ -23,17 +23,7 @@ namespace KSB_Client_TCP
             Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             host.Connect(ipep);
 
-            byte[] connection = Header.AssemblePacket(0, Const.CONNECT_REQUEST, 0, 1, 0, new byte[1]);
-            host.Send(connection);
-
-            Header response_connect = WaitForServerResponse(host);
-            if (CheckOPCODE(response_connect, Const.CONNECT_REQUEST, "서버 접속 성공", "서버 접속 실패"))
-            {
-
-            }
-
-            bool running = true;
-
+            bool running = Fuctions.InitializeConnection(host);
             while (running)
             {
                 Console.Clear();
@@ -46,89 +36,34 @@ namespace KSB_Client_TCP
                 Console.Write("메뉴를 선택하세요: ");
 
                 string choice = Console.ReadLine();
-
                 switch (choice)
                 {
                     case "1":
                         // 회원가입
-                        //Dictionary<string, byte[]> info = UserInfo.CreateID();
-                        //byte[] login_data = Protocol3_Json.DictionaryToJson(info);
+                        Console.WriteLine("회원가입 요청");
                         Fuctions.CreateAccount(host);
-                        Header response_create = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_create, Const.CREATE_ACCOUNT, "회원가입 성공", "가입 실패"))
-                        {
-
-                        }
-                        else
-                        {
-                            string reason = Encoding.UTF8.GetString(response_create.BODY);
-                            Console.WriteLine(reason);
-                        }
                         break;
-
                     case "2":
                         // 로그인
+                        Console.WriteLine("로그인 요청");
                         Fuctions.TryLogin(host);
-                        Header response_login = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_login, Const.LOGIN, "로그인 성공", "로그인 실패"))
-                        {
-
-                        }
-                        else
-                        {
-                            string reason = Encoding.UTF8.GetString(response_login.BODY);
-                            Console.WriteLine(reason);
-                        }
                         break;
-
                     case "3":
                         // Plane Text 전송
+                        Console.WriteLine("메세지 전송");
                         Fuctions.TextTransfer(host);
-                        Header response_text = WaitForServerResponse(host);
-                        string response_msg = Encoding.UTF8.GetString(response_text.BODY);
-                        if (CheckOPCODE(response_text, Const.TEXT_SEND, response_msg, response_msg))
-                        {
-
-                        }
                         break;
-
                     case "4":
                         // 파일 전송
                         Console.WriteLine("파일 전송을 시작합니다...");
-
                         Fuctions.FileTransferRequest(host, rootDir, name);
-                        Header response_file = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_file, Const.FILE_REQUEST, "파일 전송 가능", "파일 전송 불가"))
-                        {
-                            Fuctions.FileTransfer(host, rootDir, name);
-                        }
-                        else
-                        {
-                            string reason = Encoding.UTF8.GetString(response_file.BODY);
-                            Console.WriteLine(reason);
-                            break;
-                        }
-
-                        Header response_end = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_end, Const.SENDLAST, "마지막 패킷 수신 알림", "수신 중 이상 발생"))
-                        {
-                            // 해시 전송
-                            Fuctions.FileCheckRequest(host, rootDir, name);
-                        }
-                        else
-                        {
-                            string reason = Encoding.UTF8.GetString(response_end.BODY);
-                            Console.WriteLine(reason);
-                        }
                         break;
-
                     case "5":
                         // 연결 끊기
                         Console.WriteLine("서버와 연결을 종료합니다...");
                         Fuctions.Disconnect(host);
                         running = false;
                         break;
-
                     default:
                         Console.WriteLine("잘못된 입력입니다. 다시 선택하세요.");
                         break;
@@ -139,36 +74,6 @@ namespace KSB_Client_TCP
                     Console.WriteLine("\n계속하려면 Enter 키를 누르세요...");
                     Console.ReadLine();
                 }
-            }
-        }
-
-        /// <summary>
-        /// 서버에 요청 보낸 뒤 응답을 대기 하는 용도
-        /// </summary>
-        public static Header WaitForServerResponse(Socket host)
-        {
-            byte[] buffer = new byte[4096];
-            int bytesReceived = host.Receive(buffer);
-            if (bytesReceived > 0)
-            {
-                Header header = new Header();
-                header.DisassemblePacket(buffer);
-                return header;
-            }
-            return null;
-        }
-
-        public static bool CheckOPCODE(Header hd, int opcode, string correctMSG, string failMSG)
-        {
-            if (hd.OPCODE == opcode)
-            {
-                Console.WriteLine(correctMSG);
-                return true;
-            }
-            else
-            {
-                Console.WriteLine(failMSG);
-                return false;
             }
         }
     }
