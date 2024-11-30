@@ -30,7 +30,7 @@ namespace ServerSocket
         public Socket host;
 
         List<Protocol1_File_Log> log_protocol1 = new();
-        string server_dir = @"..\..\..\..\..\KSB_Server_TCP"; //ReceivedFile
+        string server_dir = @"..\..\..\..\..\KSB_Server_TCP";
 
         StateMachine SM = new();
 
@@ -40,11 +40,11 @@ namespace ServerSocket
 
             Task.Run(() =>
             {
-                // SM.SetState(StateMachine.AuthenticState.Listening);
-                while (true)
+                while (host.Connected)
                 {
                     /// 받은 데이터를 분리. 패킷 정보를 담은 헤더와 정보 및 실제 데이터를 담은 바디로 구성
-                    byte[] packet = StartListening();
+                    byte[] packet = new byte[4096];
+                    int length = host.Receive(packet);
                     Header header = new();
                     header.DisassemblePacket(packet);
 
@@ -90,6 +90,9 @@ namespace ServerSocket
                             /// 무결성 검사하고 결과 전송 (실패면 재전송 요청)
                             CheckIntegrity(header);
                             break;
+                        case Const.GET_OFF:
+                            CloseHandle(header);
+                            break;
                         default:
                             break;
                     }
@@ -97,6 +100,10 @@ namespace ServerSocket
             });
         }
 
+        /// <summary>
+        /// 굳이 필요없는 내용이라 생략
+        /// 삭제는 보류
+        /// </summary>
         public byte[] StartListening()
         {
             /// 최대 4096 바이트를 받음, 바이트 수 딱 맞게 줄여서 반환
@@ -314,6 +321,15 @@ namespace ServerSocket
                 byte[] data = Header.AssemblePacket(0, Const.CHECK_DIFF, 0, result.Length, 0, result);
                 host.Send(data);
             }
+        }
+
+
+        private void CloseHandle(Header header)
+        {
+            byte[] result = Encoding.UTF8.GetBytes("500_OK");
+            byte[] data = Header.AssemblePacket(0, Const.CHECK_DIFF, 0, result.Length, 0, result);
+            host.Send(data);
+            host.Disconnect(true);
         }
     }
 }
