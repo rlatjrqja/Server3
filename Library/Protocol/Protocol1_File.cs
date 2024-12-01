@@ -112,5 +112,44 @@ namespace Protocols
             /// 최대 4079 크기의 바이트배열 묶음 반환
             return packets;
         }
+
+        public static List<string> LoadFileList(string rootDir)
+        {
+            try
+            {
+                // 1. 상대 경로를 절대 경로로 변환
+                string absolutePath = Path.GetFullPath(rootDir);
+
+                // 2. 디렉토리가 존재하는지 확인
+                if (!Directory.Exists(absolutePath))
+                {
+                    Console.WriteLine("해당 디렉토리가 존재하지 않습니다.");
+                    return null;
+                }
+
+                // 3. 디렉토리 내 파일 이름 불러오기
+                List<string> fileNames = new List<string>(Directory.GetFiles(absolutePath));
+
+                // 파일 이름이 없을 경우 처리
+                if (fileNames.Count == 0)
+                {
+                    Console.WriteLine("디렉토리에 파일이 없습니다.");
+                    return null;
+                }
+
+                // 4. 파일 이름 리스트 출력 (한 줄에 하나씩)
+                for (int i = 0; i < fileNames.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {Path.GetFileName(fileNames[i])}");
+                }
+
+                return fileNames;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"오류 발생: {ex.Message}");
+                return null;
+            }
+        }
     }
 }

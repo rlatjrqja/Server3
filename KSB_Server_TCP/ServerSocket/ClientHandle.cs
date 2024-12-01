@@ -66,20 +66,12 @@ namespace ServerSocket
                         case Const.LOGIN:
                             TryLoginRequest(header);
                             break;
-                        case Const.FILE_REQUEST:
+                        case Const.FILE_UPLOAD:
                             /// 파일 업로드 요청 받음
                             FileUploadRequest(header); 
                             break;
                         case Const.TEXT_SEND:
-                            switch (header.proto_VER)
-                            {
-                                case 1:
-
-                                    break;
-                                case 2:
-                                    TextReceive(header);
-                                    break;
-                            }
+                            TextReceive(header);
                             break;
                         case Const.SENDING:
                             /// 파일 받는 중
@@ -211,7 +203,7 @@ namespace ServerSocket
                 {
                     case 100:
                         byte[] response1 = Encoding.UTF8.GetBytes("100_OK");
-                        byte[] data1 = Header.AssemblePacket(0, Const.FILE_REQUEST, 0, response1.Length, 0, response1);
+                        byte[] data1 = Header.AssemblePacket(0, Const.FILE_UPLOAD, 0, response1.Length, 0, response1);
                         host.Send(data1);
                         break;
                     case 101:

@@ -31,8 +31,9 @@ namespace KSB_Client_TCP
                 Console.WriteLine("1. 회원가입");
                 Console.WriteLine("2. 로그인");
                 Console.WriteLine("3. Plane Text 전송");
-                Console.WriteLine("4. 파일 전송");
-                Console.WriteLine("5. 연결 끊기");
+                Console.WriteLine("4. 파일 업로드");
+                Console.WriteLine("5. 파일 다운로드");
+                Console.WriteLine("6. 연결 끊기");
                 Console.Write("메뉴를 선택하세요: ");
 
                 string choice = Console.ReadLine();
@@ -55,11 +56,16 @@ namespace KSB_Client_TCP
                         break;
                     case "4":
                         // 파일 전송
-                        Console.WriteLine("파일 전송을 시작합니다...");
+                        Console.WriteLine("파일 업로드를 시작합니다...");
                         string name = Fuctions.SelectFile(rootDir);
                         Fuctions.FileTransferRequest(host, rootDir, name);
                         break;
                     case "5":
+                        // 파일 수신
+                        Console.WriteLine("파일 다운로드를 시작합니다...");
+
+                        break;
+                    case "6":
                         // 연결 끊기
                         Console.WriteLine("서버와 연결을 종료합니다...");
                         Fuctions.Disconnect(host);

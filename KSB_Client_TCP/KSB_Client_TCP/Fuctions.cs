@@ -3,6 +3,7 @@ using Login;
 using Protocols;
 using System.Net.Sockets;
 using System.Text;
+using System.Xml.Linq;
 
 namespace KSB_Client_TCP
 {
@@ -102,55 +103,23 @@ namespace KSB_Client_TCP
         /// </summary>
         public static string SelectFile(string rootDir)
         {
-            try
+            // 5. 사용자 입력 받아 번호에 해당하는 파일 이름 반환
+            while (true)
             {
-                // 1. 상대 경로를 절대 경로로 변환
-                string absolutePath = Path.GetFullPath(rootDir);
+                List<string> fileNames = Protocol1_File.LoadFileList(rootDir);
 
-                // 2. 디렉토리가 존재하는지 확인
-                if (!Directory.Exists(absolutePath))
+                Console.Write("전송할 파일 번호: ");
+                string input = Console.ReadLine();
+
+                if (int.TryParse(input, out int index) && index > 0 && index <= fileNames.Count)
                 {
-                    Console.WriteLine("해당 디렉토리가 존재하지 않습니다.");
-                    return null;
+                    Console.WriteLine($"선택된 파일: {Path.GetFileName(fileNames[index - 1])}");
+                    return Path.GetFileName(fileNames[index - 1]); // 파일 이름 반환
                 }
-
-                // 3. 디렉토리 내 파일 이름 불러오기
-                List<string> fileNames = new List<string>(Directory.GetFiles(absolutePath));
-
-                // 파일 이름이 없을 경우 처리
-                if (fileNames.Count == 0)
+                else
                 {
-                    Console.WriteLine("디렉토리에 파일이 없습니다.");
-                    return null;
+                    Console.WriteLine("잘못된 입력입니다. 올바른 번호를 입력해주세요.");
                 }
-
-                // 4. 파일 이름 리스트 출력 (한 줄에 하나씩)
-                for (int i = 0; i < fileNames.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}. {Path.GetFileName(fileNames[i])}");
-                }
-
-                // 5. 사용자 입력 받아 번호에 해당하는 파일 이름 반환
-                while (true)
-                {
-                    Console.Write("전송할 파일 번호: ");
-                    string input = Console.ReadLine();
-
-                    if (int.TryParse(input, out int index) && index > 0 && index <= fileNames.Count)
-                    {
-                        Console.WriteLine($"선택된 파일: {Path.GetFileName(fileNames[index - 1])}");
-                        return Path.GetFileName(fileNames[index - 1]); // 파일 이름 반환
-                    }
-                    else
-                    {
-                        Console.WriteLine("잘못된 입력입니다. 올바른 번호를 입력해주세요.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"오류 발생: {ex.Message}");
-                return null;
             }
         }
 
@@ -164,11 +133,11 @@ namespace KSB_Client_TCP
             Console.WriteLine($"파일 크기: {binary.Length} 바이트");
 
             byte[] request = Protocol1_File.TransmitFileRequest(name.Length, name, binary.Length);
-            byte[] data = Header.AssemblePacket(1, Const.FILE_REQUEST, 0, request.Length, 0, request);
+            byte[] data = Header.AssemblePacket(1, Const.FILE_UPLOAD, 0, request.Length, 0, request);
             host.Send(data);
 
             Header response_file = WaitForServerResponse(host);
-            if (CheckOPCODE(response_file, Const.FILE_REQUEST, "파일 전송 가능", "파일 전송 불가"))
+            if (CheckOPCODE(response_file, Const.FILE_UPLOAD, "파일 전송 가능", "파일 전송 불가"))
             {
                 FileTransfer(host, rootDir, name);
             }
@@ -183,11 +152,11 @@ namespace KSB_Client_TCP
                     if (choice == "Y" || choice == "y")
                     {
                         byte[] request_r = Protocol1_File.TransmitFileRequest(reason.Length, reason, binary.Length);
-                        byte[] data_r = Header.AssemblePacket(1, Const.FILE_REQUEST, 0, request_r.Length, 0, request_r);
+                        byte[] data_r = Header.AssemblePacket(1, Const.FILE_UPLOAD, 0, request_r.Length, 0, request_r);
                         host.Send(data_r);
 
                         Header response_file_r = WaitForServerResponse(host);
-                        if (CheckOPCODE(response_file_r, Const.FILE_REQUEST, "파일 전송 가능", "파일 전송 불가"))
+                        if (CheckOPCODE(response_file_r, Const.FILE_UPLOAD, "파일 전송 가능", "파일 전송 불가"))
                         {
                             FileTransfer(host, rootDir, name);
                         }
@@ -235,6 +204,28 @@ namespace KSB_Client_TCP
             {
 
             }
+        }
+
+        /// <summary>
+        /// OPCODE 140
+        /// </summary>
+        public static void GetServerFile(Socket host)
+        {
+            byte[] data = Header.AssemblePacket(1, Const.FILE_VIEWLIST, 0, 1, 0, new byte[1]);
+            host.Send(data);
+
+            Header response = WaitForServerResponse(host);
+            string file_list = Encoding.UTF8.GetString(response.BODY);
+            if (CheckOPCODE(response, Const.FILE_UPLOAD, file_list, "목록을 불러올 수 없습니다."))
+            {
+                Console.Write("다운로드할 파일 번호: ");
+                string input = Console.ReadLine();
+                byte[] inputData = Encoding.UTF8.GetBytes(input);
+                byte[] selNum = Header.AssemblePacket(1, Const.FILE_VIEWLIST, 0, inputData.Length, 0, inputData);
+                host.Send(selNum);
+            }
+
+            
         }
 
         /// <summary>
