@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" modified="2024-12-01T09:23:14.235Z" version="24.2.0" etag="5m0hRnnHbsKkRpIfc3dZ" type="github" pages="2">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" modified="2024-12-01T11:31:16.294Z" version="24.2.0" etag="w2etR_zJUF8Z626Tk4iB" type="github" pages="2">
   <diagram name="FlowChart" id="2YBvvXClWsGukQMizWep">
     <mxGraphModel dx="5070" dy="2893" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -437,7 +437,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="F74FcNkUiHH58SdlEUc_" name="Relationship">
-    <mxGraphModel dx="2095" dy="723" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3592" dy="1578" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -498,7 +498,7 @@
           <mxGeometry x="60" y="761" width="70" height="50" as="geometry" />
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-39" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Protocols&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;Header&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;Protocol1_file&lt;br&gt;Protocol2_Plane&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;Protocol3_Json&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="-230" y="510" width="116" height="100" as="geometry" />
+          <mxGeometry x="-280" y="510" width="116" height="100" as="geometry" />
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-40" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="SMr1mTFWLgsmZn_ZOApX-39">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -506,7 +506,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-47" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Encryption&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;MyAES&lt;br&gt;MyRSA&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="-40" y="530" width="116" height="70" as="geometry" />
+          <mxGeometry x="-90" y="530" width="116" height="70" as="geometry" />
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-48" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="SMr1mTFWLgsmZn_ZOApX-47">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -514,7 +514,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-49" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Integrity&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;MySHA256&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="180" y="530" width="116" height="50" as="geometry" />
+          <mxGeometry x="110" y="530" width="116" height="50" as="geometry" />
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-50" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="SMr1mTFWLgsmZn_ZOApX-49">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -522,7 +522,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-51" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Login&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;UserInfo&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="330" y="530" width="116" height="50" as="geometry" />
+          <mxGeometry x="280" y="530" width="116" height="50" as="geometry" />
         </mxCell>
         <mxCell id="SMr1mTFWLgsmZn_ZOApX-52" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="SMr1mTFWLgsmZn_ZOApX-51">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -561,13 +561,40 @@
         <mxCell id="QbeJ9KvBb-KvfpjK4rgg-2" value="1. 서버 프로그램으로 전송하기 위한 별개의 프로젝트&lt;div&gt;2. 파일 또는 텍스트를 전송하기 전 데이터로 전환하는 과정은&lt;/div&gt;&lt;div&gt;서버와 같은 라이브러리를 참조함&lt;/div&gt;&lt;div&gt;3. 사용자에게 보여질 메뉴를 관리하는 Main과&amp;nbsp;&lt;/div&gt;&lt;div&gt;실제 동작을 모아놓은 Fuction으로 구분&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="440" y="820" width="350" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-3" value="1. 주고 받는 모든 바이트 배열에는 16바이트의 헤더가 붙는다.&lt;div&gt;2. 서버와 클라이언트는 헤더에 포함된 프로토콜 정보, 순서, 데이터의 크기 등의 정보를 해석한다&lt;/div&gt;&lt;div&gt;3. 파일 프로토콜은 파일에서 바이트로의 전환과 그 반대로의 전환을 담당함&lt;/div&gt;&lt;div&gt;4.&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="-760" y="350" width="530" height="89" as="geometry" />
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-3" value="1. 주고 받는 모든 바이트 배열에는 16바이트의 헤더가 붙는다.&lt;div&gt;2. 서버와 클라이언트는 헤더에 포함된 프로토콜 정보, 순서, 데이터의 크기 등의 정보를 해석한다&lt;/div&gt;&lt;div&gt;3. 파일 프로토콜은 파일에서 바이트로의 전환과 그 반대로의 전환을 담당함&lt;/div&gt;&lt;div&gt;4. Json 프로토콜은 Json과 바이트의 전환과 Json에 데이터를 추가하는 역할도 한다&lt;/div&gt;&lt;div&gt;Json 파일인 회원 아이디, 비밀번호 정보를 이것으로 관리한다&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-800" y="350" width="530" height="89" as="geometry" />
         </mxCell>
         <mxCell id="QbeJ9KvBb-KvfpjK4rgg-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;endArrow=none;endFill=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="SMr1mTFWLgsmZn_ZOApX-39" target="QbeJ9KvBb-KvfpjK4rgg-3">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-100" y="376" as="sourcePoint" />
             <mxPoint x="-220" y="405" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-5" value="1. 암호화를 담당하는 라이브러리&lt;div&gt;2. Base64로 생성한 고정 키 사용&lt;/div&gt;&lt;div&gt;3. 인자값으로 받은 byte 배열을 암호화한 byte 배열로 반환함&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-140" y="150" width="350" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;endArrow=none;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="QbeJ9KvBb-KvfpjK4rgg-5" target="SMr1mTFWLgsmZn_ZOApX-47">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="506" as="sourcePoint" />
+            <mxPoint x="50" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-7" value="1. 파일 수신 후 무결성을 검증하는 라이브러리&lt;div&gt;2. 수신측에서 받은 파일을 기반으로 해시 생성&lt;/div&gt;&lt;div&gt;3. 송신측에서 보낸 파일의 원본을 기반으로 해시 생성&lt;/div&gt;&lt;div&gt;4. 두 해시의 비교 후 참/거짓 반환&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="110" y="300" width="350" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-8" value="1. 회원가입용 라이브러리&lt;div&gt;2. 아이디와 비밀번호를 입력받음&lt;/div&gt;&lt;div&gt;3. 비밀번호를 해시로 변환&lt;/div&gt;&lt;div&gt;4. 한 쌍으로 된 정보를 전송&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="460" width="350" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;endArrow=none;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="QbeJ9KvBb-KvfpjK4rgg-7" target="SMr1mTFWLgsmZn_ZOApX-49">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-20" y="205" as="sourcePoint" />
+            <mxPoint x="-51" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QbeJ9KvBb-KvfpjK4rgg-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;endArrow=none;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="QbeJ9KvBb-KvfpjK4rgg-8" target="SMr1mTFWLgsmZn_ZOApX-51">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="295" y="400" as="sourcePoint" />
+            <mxPoint x="198" y="540" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
