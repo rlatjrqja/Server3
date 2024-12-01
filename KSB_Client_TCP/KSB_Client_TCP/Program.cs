@@ -63,7 +63,7 @@ namespace KSB_Client_TCP
                     case "5":
                         // 파일 수신
                         Console.WriteLine("파일 다운로드를 시작합니다...");
-
+                        Fuctions.GetServerFile(host, rootDir);
                         break;
                     case "6":
                         // 연결 끊기

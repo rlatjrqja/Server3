@@ -2,6 +2,7 @@
 using Login;
 using Protocols;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Xml.Linq;
 
@@ -103,10 +104,16 @@ namespace KSB_Client_TCP
         /// </summary>
         public static string SelectFile(string rootDir)
         {
-            // 5. 사용자 입력 받아 번호에 해당하는 파일 이름 반환
+            // 사용자 입력 받아 번호에 해당하는 파일 이름 반환
             while (true)
             {
                 List<string> fileNames = Protocol1_File.LoadFileList(rootDir);
+
+                // 파일 이름 리스트 출력 (한 줄에 하나씩)
+                for (int i = 0; i < fileNames.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {Path.GetFileName(fileNames[i])}");
+                }
 
                 Console.Write("전송할 파일 번호: ");
                 string input = Console.ReadLine();
@@ -209,24 +216,77 @@ namespace KSB_Client_TCP
         /// <summary>
         /// OPCODE 140
         /// </summary>
-        public static void GetServerFile(Socket host)
+        public static void GetServerFile(Socket host, string rootDir)
         {
+            // 서버에 파일 목록 요청
             byte[] data = Header.AssemblePacket(1, Const.FILE_VIEWLIST, 0, 1, 0, new byte[1]);
             host.Send(data);
 
+            // 서버 응답 수신
             Header response = WaitForServerResponse(host);
             string file_list = Encoding.UTF8.GetString(response.BODY);
-            if (CheckOPCODE(response, Const.FILE_UPLOAD, file_list, "목록을 불러올 수 없습니다."))
+            string selectedFile = "";
+            if (CheckOPCODE(response, Const.FILE_VIEWLIST, file_list, "목록을 불러올 수 없습니다."))
             {
+                // 파일 목록 출력
+                string[] list = file_list.Split('\n');
+
+                // 사용자 입력 처리
                 Console.Write("다운로드할 파일 번호: ");
-                string input = Console.ReadLine();
-                byte[] inputData = Encoding.UTF8.GetBytes(input);
-                byte[] selNum = Header.AssemblePacket(1, Const.FILE_VIEWLIST, 0, inputData.Length, 0, inputData);
-                host.Send(selNum);
+                if (int.TryParse(Console.ReadLine(), out int num) && num > 0 && num <= list.Length)
+                {
+                    // 파일 이름 가져오기
+                    selectedFile = list[num - 1]; // 입력된 번호에 해당하는 파일명
+                    selectedFile = selectedFile.Substring(selectedFile.IndexOf(' ') + 1).Trim(); // '1. ' 제거
+
+                    Console.WriteLine($"선택된 파일: {selectedFile}");
+
+                    // 처리된 파일 이름을 전송
+                    byte[] inputData = Encoding.UTF8.GetBytes(selectedFile);
+                    byte[] selNum = Header.AssemblePacket(1, Const.FILE_DOWNLOAD, 0, inputData.Length, 0, inputData);
+                    host.Send(selNum);
+                }
+                else
+                {
+                    Console.WriteLine("유효하지 않은 번호입니다.");
+                }
             }
 
-            
+            while(true)
+            {
+                Header file_end = WaitForServerResponse(host);
+                if (CheckOPCODE(file_end, Const.SENDLAST, "마지막 패킷 수신", $"[Receive] {file_end.BODY.Length}Byte"))
+                {
+                    break;
+                }
+
+                /// 받은 파일 바이너리 (암호화 전)
+                byte[] encryptedData = file_end.BODY;
+
+                /// MyAES 복호화. 라이브러리에 고정값 사용중 (보안성 낮음)
+                MyAES aes = new MyAES();
+                byte[] decryptedData = aes.DecryptData(encryptedData);
+
+                string filePath = rootDir + selectedFile;
+                string fullPath = Path.GetFullPath(filePath);
+
+                using (FileStream fs = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    int bytesToRead = (int)Math.Min(decryptedData.Length, file_end.LENGTH);
+
+                    if (bytesToRead <= 0)
+                    {
+                        Console.WriteLine("파일 수신 중 연결이 끊겼습니다.");
+                        return;
+                    }
+
+                    // Append decrypted data to the file
+                    fs.Position = fs.Length;
+                    fs.Write(decryptedData, 0, bytesToRead);
+                }
+            }
         }
+
 
         /// <summary>
         /// OPCODE 200

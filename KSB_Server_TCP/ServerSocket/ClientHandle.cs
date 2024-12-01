@@ -73,6 +73,12 @@ namespace ServerSocket
                         case Const.TEXT_SEND:
                             TextReceive(header);
                             break;
+                        case Const.FILE_VIEWLIST:
+                            FileListRequest(header);
+                            break;
+                        case Const.FILE_DOWNLOAD:
+                            FileDownLoad(header);
+                            break;
                         case Const.SENDING:
                             /// 파일 받는 중
                             FileReceive(header);
@@ -263,9 +269,44 @@ namespace ServerSocket
             host.Send(data);
         }
 
-        private void FileReceiveStart(Header header)
+        private void FileListRequest(Header header)
         {
-            
+            List<string> fileNames = Protocol1_File.LoadFileList(server_dir + @"\files\");
+
+            string file_list = "";
+            for (int i = 0; i < fileNames.Count; i++)
+            {
+                file_list += $"{i + 1}. {Path.GetFileName(fileNames[i])}\n";
+            }
+
+            byte[] response = Encoding.UTF8.GetBytes(file_list);
+            byte[] data = Header.AssemblePacket(0, Const.FILE_VIEWLIST, 0, response.Length, 0, response);
+            host.Send(data);
+        }
+
+        private void FileDownLoad(Header header)
+        {
+            MyAES aes = new MyAES();
+            string name = Encoding.UTF8.GetString(header.BODY);
+            byte[] binary = Protocol1_File.FileToBinary(server_dir + @"\files\", name);
+            List<byte[]> packets = Protocol1_File.TransmitFile(binary);
+            for (int i = 0; i < packets.Count; i++)
+            {
+                byte[] encryptedSegment = aes.EncryptData(packets[i]);
+
+                if (i != packets.Count - 1)
+                {
+                    // 암호화된 패킷 전송
+                    host.Send(Header.AssemblePacket(1, Const.SENDING, i, encryptedSegment.Length, 0, encryptedSegment));
+                    Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                }
+                else
+                {
+                    // 암호화된 패킷 전송
+                    host.Send(Header.AssemblePacket(1, Const.SENDLAST, i, encryptedSegment.Length, 0, encryptedSegment));
+                    Console.WriteLine($"[Send] {encryptedSegment.Length} Byte (Packet {i + 1}/{packets.Count})");
+                }
+            }
         }
 
         void FileReceive(Header header)

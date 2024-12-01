@@ -137,12 +137,6 @@ namespace Protocols
                     return null;
                 }
 
-                // 4. 파일 이름 리스트 출력 (한 줄에 하나씩)
-                for (int i = 0; i < fileNames.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}. {Path.GetFileName(fileNames[i])}");
-                }
-
                 return fileNames;
             }
             catch (Exception ex)

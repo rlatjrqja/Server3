@@ -21,7 +21,7 @@ namespace Protocols
         public const int FILE_RENAME = 103;
         public const int TEXT_SEND = 110;
         public const int FILE_VIEWLIST = 140;
-        public const int FILE_DOWNLOADT = 150;
+        public const int FILE_DOWNLOAD = 150;
         public const int SENDING = 200;
         public const int SENDLAST = 210;
         public const int CHECK_PACKET = 300;
