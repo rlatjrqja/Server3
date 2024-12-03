@@ -108,7 +108,7 @@ public class Protocol3_Json
         return true;
     }
 
-    public static bool IsJsonIncludeData(string json, string data)
+    public static string IsJsonIncludeData(string json, string data)
     {
         try
         {
@@ -127,18 +127,18 @@ public class Protocol3_Json
             {
                 // 키와 값이 모두 일치
                 Console.WriteLine($"User '{dataKey}' is login.");
-                return true;
+                return dataKey;
             }
             else
             {
                 Console.WriteLine($"Can't find user '{dataKey}' in the JSON.");
-                return false;
+                return null;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error occurred: {ex.Message}");
-            return false;
+            return null;
         }
     }
 }

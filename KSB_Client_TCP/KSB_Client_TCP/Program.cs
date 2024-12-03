@@ -13,11 +13,10 @@ namespace KSB_Client_TCP
     {
         static void Main(string[] args)
         {
-            string ip = "192.168.45.232"; // 고정 IP
-            //string ip = "172.18.27.199"; // 고정 IP
+            //string ip = "192.168.45.232"; // 고정 IP
+            string ip = "172.18.27.199"; // 고정 IP
             int port = 50001;            // 고정 포트 번호
             string rootDir = @"..\..\..\..\..\KSB_Client_TCP\files\";
-            //string name = @"Dummy.xlsx";
 
             IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ip), port);
             Socket host = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

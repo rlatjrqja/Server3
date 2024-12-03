@@ -176,6 +176,7 @@ namespace KSB_Client_TCP
                         return;
                     }
                 }
+                else { return; }
             }
 
             Header response_end = WaitForServerResponse(host);

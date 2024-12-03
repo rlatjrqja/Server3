@@ -29,6 +29,7 @@ namespace ServerSocket
     public class ClientHandle
     {
         public Socket host;
+        string name = "Unknown";
 
         List<Protocol1_File_Log> log_protocol1 = new();
         string server_dir = @"..\..\..\..\..\KSB_Server_TCP";
@@ -176,10 +177,11 @@ namespace ServerSocket
             string filePath = server_dir + @"\database\userDB.json";
             string fullPath = Path.GetFullPath(filePath);
             string database = Protocol3_Json.JsonFileToString(fullPath);
-            bool isvalid = Protocol3_Json.IsJsonIncludeData(database, info);
-
-            if (isvalid)
+            string key = Protocol3_Json.IsJsonIncludeData(database, info);
+             
+            if (key != null)
             {
+                name = key;
                 byte[] response = Encoding.UTF8.GetBytes("Login success");
                 byte[] data = Header.AssemblePacket(0, Const.LOGIN, 0, response.Length, 0, response);
                 SM.SetState(AuthenticState.Member);
@@ -261,7 +263,7 @@ namespace ServerSocket
             MyAES aes = new MyAES();
             byte[] decryptedData = aes.DecryptData(encryptedData);
             string message = Encoding.UTF8.GetString(decryptedData);
-            Console.WriteLine(message);
+            Console.WriteLine($"{name}: { message }");
 
             DateTime time = new();
             byte[] result = BitConverter.GetBytes(time.Second);
